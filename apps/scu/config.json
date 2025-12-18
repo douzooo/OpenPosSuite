@@ -1,0 +1,5 @@
+{
+  "SCU_PORT": 8080,
+  "SCU_HOST": "localhost",
+  "SCU_LOG_LEVEL": "info"
+}
