@@ -21,6 +21,7 @@ ensuring compliance with all applicable laws and regulations.
 
 ## Installation
 `pnpm install` (in the root folder)
+
 `pnpm run dev` (starts every service, use `pnpm run kiosk:dev` to only start the kiosk or `pnpm run scu:dev` for the scu)
 
 
