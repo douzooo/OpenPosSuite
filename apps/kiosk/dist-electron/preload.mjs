@@ -6,9 +6,7 @@ electron.contextBridge.exposeInMainWorld("scu", {
     electron.ipcRenderer.on("scu-status", listener);
     return () => electron.ipcRenderer.removeListener("scu-status", listener);
   },
-  // Ask main to immediately send current status event
   requestStatus: () => electron.ipcRenderer.send("scu-request-status"),
-  // Get current status as a promise
   getStatus: () => electron.ipcRenderer.invoke("scu-get-status")
 });
 electron.contextBridge.exposeInMainWorld("log", {

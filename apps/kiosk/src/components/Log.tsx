@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 const sessionLogs: string[] = [];
 
 const LogOutput = () => {
-  const [logs, setLogs] = useState<string[]>(sessionLogs);
+  const [logs, setLogs] = useState<string[]>([...sessionLogs]);
 
   useEffect(() => {
     const handleLog = (message: string) => {
@@ -12,11 +12,10 @@ const LogOutput = () => {
       setLogs([...sessionLogs]);
     };
 
-    (window as any).log.onLog(handleLog);
+    const cleanup = (window as any).log.onLog(handleLog);
 
     return () => {
-      // Cleanup: remove the listener when component unmounts
-      (window as any).log.offLog?.(handleLog);
+      if (cleanup) cleanup();
     };
   }, []);
 

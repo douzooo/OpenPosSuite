@@ -7,5 +7,10 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "baseUrl": "."
-  }
+  },
+  "references": [
+    { "path": "packages/socket-contracts" },
+    { "path": "apps/kiosk" },
+    { "path": "apps/scu" }
+  ]
 }
