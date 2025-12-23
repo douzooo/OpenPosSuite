@@ -1,2 +1,8 @@
 # any node_modules
 node_modules/
+
+# any build output
+dist/
+build/
+out/
+release/

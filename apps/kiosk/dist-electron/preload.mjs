@@ -1,18 +1,1 @@
-"use strict";
-const electron = require("electron");
-electron.contextBridge.exposeInMainWorld("scu", {
-  onStatus: (cb) => {
-    const listener = (_, data) => cb(data == null ? void 0 : data.status);
-    electron.ipcRenderer.on("scu-status", listener);
-    return () => electron.ipcRenderer.removeListener("scu-status", listener);
-  },
-  requestStatus: () => electron.ipcRenderer.send("scu-request-status"),
-  getStatus: () => electron.ipcRenderer.invoke("scu-get-status")
-});
-electron.contextBridge.exposeInMainWorld("log", {
-  onLog: (cb) => {
-    const listener = (_, data) => cb(data == null ? void 0 : data.message);
-    electron.ipcRenderer.on("log-message", listener);
-    return () => electron.ipcRenderer.removeListener("log-message", listener);
-  }
-});
+"use strict";const e=require("electron");e.contextBridge.exposeInMainWorld("scu",{onStatus:n=>{const r=(t,s)=>n(s==null?void 0:s.status);return e.ipcRenderer.on("scu-status",r),()=>e.ipcRenderer.removeListener("scu-status",r)},requestStatus:()=>e.ipcRenderer.send("scu-request-status"),getStatus:()=>e.ipcRenderer.invoke("scu-get-status")});e.contextBridge.exposeInMainWorld("log",{onLog:n=>{const r=(t,s)=>n(s==null?void 0:s.message);return e.ipcRenderer.on("log-message",r),()=>e.ipcRenderer.removeListener("log-message",r)}});

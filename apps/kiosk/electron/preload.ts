@@ -5,7 +5,6 @@ contextBridge.exposeInMainWorld('scu', {
   onStatus: (cb: (status: string) => void) => {
     const listener = (_: any, data: any) => cb(data?.status);
     ipcRenderer.on('scu-status', listener);
-    // Return cleanup function
     return () => ipcRenderer.removeListener('scu-status', listener);
   },
   requestStatus: () => ipcRenderer.send('scu-request-status'),
@@ -16,7 +15,6 @@ contextBridge.exposeInMainWorld('log', {
   onLog: (cb: (message: string) => void) => {
     const listener = (_: any, data: any) => cb(data?.message);
     ipcRenderer.on('log-message', listener);
-    // Return cleanup function (not offLog)
     return () => ipcRenderer.removeListener('log-message', listener);
   }
 });

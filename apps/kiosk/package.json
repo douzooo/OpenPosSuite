@@ -1,11 +1,16 @@
 {
-  "name": "my-app",
+  "name": "openpos-kiosk",
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "productName": "OpenPos Kiosk",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
+    "build:win": "tsc && vite build && electron-builder --win",
+    "build:mac": "tsc && vite build && electron-builder --mac",
+    "build:win-arm": "tsc && vite build && electron-builder --win --arm64",
+    "build:linux": "tsc && vite build && electron-builder --linux",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },

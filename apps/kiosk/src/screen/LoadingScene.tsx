@@ -1,12 +1,9 @@
-import { ipcRenderer } from "electron";
-import { electron } from "node:process";
-import { useEffect, useState } from "react";
 import LogOutput from "../components/Log";
 import { useBuildInfo } from "../hooks/useBuildInfo";
 
 const LoadingScene = () => {
   
-  const {buildInfo, error} = useBuildInfo();
+  const {buildInfo} = useBuildInfo();
   
 
   return (

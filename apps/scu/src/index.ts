@@ -33,6 +33,18 @@ io.on("connection", (socket: Socket<ClientToServerEvents, ServerToClientEvents>)
     });
   });
 
+  socket.on("kiosk:products:request", () => {
+    console.log("Kiosk products request received");
+
+    socket.emit("kiosk:products:response", {
+      products: [
+        { id: "prod1", name: "Product 1", price: 9.99 },
+        { id: "prod2", name: "Product 2", price: 19.99 },
+      ],
+    });
+  });
+  
+
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);
   });

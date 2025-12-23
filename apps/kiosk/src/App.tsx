@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 import LoadingScene from "./screen/LoadingScene";
-import HomeScreen from "./screen/HomeScene";
 import { useScreen } from "./state/useScreen";
+import StartScreen from "./screen/StartScreen";
+import MenuScreen from "./screen/MenuScreen";
+import StillThereScreen from "./screen/StillThereScreen";
 
 export default function App() {
   const { screen, goTo } = useScreen();
@@ -10,13 +12,12 @@ export default function App() {
     const unsub = (window as any).scu.onStatus((status: string) => {
       console.log("Hellooo", status);
       if (status === "connected") {
-        goTo("MENU");
+        goTo("START");
       }else if(status == "disconnected"){
         goTo("BOOT")
       }
     });
 
-    // Ask main for current status in case it connected before renderer loaded
     try {
       (window as any).scu.requestStatus?.();
     } catch {}
@@ -29,8 +30,12 @@ export default function App() {
   switch (screen) {
     case "BOOT":
       return <LoadingScene />;
+    case "START":
+      return <StartScreen />;
     case "MENU":
-      return <HomeScreen />;
+      return <MenuScreen />;
+    case "STILL_THERE":
+      return <StillThereScreen/>
     default:
       return null;
   }
