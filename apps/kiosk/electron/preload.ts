@@ -18,3 +18,13 @@ contextBridge.exposeInMainWorld('log', {
     return () => ipcRenderer.removeListener('log-message', listener);
   }
 });
+
+//TODO: Cache this and update on changes
+contextBridge.exposeInMainWorld('products', {
+  getProducts: () => ipcRenderer.invoke('products-get-all'),
+  onProducts: (cb: (products: any) => void) => {
+    const listener = (_: any, data: any) => cb(data);
+    ipcRenderer.on('products', listener);
+    return () => ipcRenderer.removeListener('products', listener);
+  }
+});

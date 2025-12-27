@@ -22,13 +22,21 @@ const io = new Server(httpServer, {
 io.on("connection", (socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {
   console.log("New Socket.IO connection:", socket.id);
 
-  socket.on("kiosk:assets:request", () => {
+  socket.on("kiosk:register", (payload) => {
+    console.log("Kiosk registered:", payload.kioskId);
+    socket.join("kiosk:" + payload.kioskId);
+    socket.emit("kiosk:register:ack", { accepted: true });
+  });
+
+
+
+  socket.on("kiosk:assets:manifest", () => {
     console.log("Kiosk assets request received");
 
-    socket.emit("kiosk:assets:response", {
+    socket.emit("kiosk:assets:manifest:response", {
       assets: [
-        { name: "Asset 1", url: "http://example.com/asset1" },
-        { name: "Asset 2", url: "http://example.com/asset2" },
+        { id: "Asset 1", url: "http://example.com/asset1", hash: "hash1" },
+        { id: "Asset 2", url: "http://example.com/asset2", hash: "hash2" },
       ],
     });
   });

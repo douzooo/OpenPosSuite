@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-export function useInactivity(timeout = 60000) { // default 1 min
+export function useInactivity(timeout = 60000) {
   const [lastActive, setLastActive] = useState(Date.now());
   const [isInactive, setIsInactive] = useState(false);
 
@@ -12,7 +12,10 @@ export function useInactivity(timeout = 60000) { // default 1 min
   useEffect(() => {
     const events = ['click', 'keypress', 'mousemove', 'touchstart'];
 
-    events.forEach(e => window.addEventListener(e, resetTimer));
+    // Only listen for activity when not inactive
+    if (!isInactive) {
+      events.forEach(e => window.addEventListener(e, resetTimer));
+    }
 
     const interval = setInterval(() => {
       if (Date.now() - lastActive > timeout) {
@@ -24,7 +27,7 @@ export function useInactivity(timeout = 60000) { // default 1 min
       clearInterval(interval);
       events.forEach(e => window.removeEventListener(e, resetTimer));
     };
-  }, [lastActive, resetTimer, timeout]);
+  }, [lastActive, resetTimer, timeout, isInactive]);
 
   return { isInactive, resetTimer, lastActive };
 }

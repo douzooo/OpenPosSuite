@@ -5,12 +5,14 @@ import { resolveSMU } from "./smuResolver";
 import { Socket } from "socket.io-client";
 import {
   ClientToServerEvents,
+  Product,
   ServerToClientEvents,
 } from "@openpos/socket-contracts";
 
 app.setName("OpenPos Kiosk");
 app.setAppUserModelId("org.openpos.kiosk"); //TODO: Change this in future i guess
 
+const products : Product[] = [];
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -231,6 +233,7 @@ class SMUConnectionManager {
     });
 
     this.socket.on("kiosk:products:response", (data) => {
+      products.splice(0, products.length, ...data.products);
       log("Received products info: " + JSON.stringify(data));
 
       this.updateStatus("connected");
@@ -310,6 +313,12 @@ ipcMain.on("scu-request-status", () => {
     // Ignore send errors
   }
 });
+
+ipcMain.handle("products-get-all", () => {
+  console.log("Products requested, sending", products);
+  return products;
+});
+
 
 ipcMain.handle("scu-get-status", async () => {
   return smuConnection.getStatus();

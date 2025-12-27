@@ -4,17 +4,30 @@ import { useScreen } from "./state/useScreen";
 import StartScreen from "./screen/StartScreen";
 import MenuScreen from "./screen/MenuScreen";
 import StillThereScreen from "./screen/StillThereScreen";
+import { useInactivity } from "./hooks/InactivityContext";
 
 export default function App() {
   const { screen, goTo } = useScreen();
+  const { isInactive, resetTimer } = useInactivity();
+
+  useEffect(() => {
+    if (isInactive && (screen === "BOOT" || screen === "START")) {
+      //TODO: Maybe have a list of screens that should not have inactivity
+      resetTimer();
+      return;
+    }
+    return () => {
+      console.log("App unmounted");
+    };
+  }, [isInactive, goTo, resetTimer, screen]);
 
   useEffect(() => {
     const unsub = (window as any).scu.onStatus((status: string) => {
       console.log("Hellooo", status);
       if (status === "connected") {
         goTo("START");
-      }else if(status == "disconnected"){
-        goTo("BOOT")
+      } else if (status == "disconnected") {
+        goTo("BOOT");
       }
     });
 
@@ -27,16 +40,26 @@ export default function App() {
     };
   }, [goTo]);
 
+  let screenToShow = null;
+
   switch (screen) {
     case "BOOT":
-      return <LoadingScene />;
+      screenToShow = <LoadingScene />;
+      break;
     case "START":
-      return <StartScreen />;
+      screenToShow = <StartScreen />;
+      break;
     case "MENU":
-      return <MenuScreen />;
-    case "STILL_THERE":
-      return <StillThereScreen/>
+      screenToShow = <MenuScreen />;
+      break;
     default:
       return null;
   }
+
+  return (
+    <>
+      {screenToShow}
+      {(isInactive && !(screen === "BOOT" || screen === "START")) && <StillThereScreen />}
+    </>
+  );
 }

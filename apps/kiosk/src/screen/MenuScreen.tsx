@@ -4,40 +4,31 @@ import { useScreen } from "../state/useScreen";
 import { useOrder } from "../hooks/useOrder";
 
 const MenuScreen = () => {
-  const { isInactive, resetTimer } = useInactivity(1000 * 5);
-
   const [testClickableState, setTestClickable] = useState<number>(0);
 
+  const { order, addProduct, clearOrder } = useOrder();
   const { goTo } = useScreen();
-
-  const {order, addProduct} = useOrder();
-
-  useEffect(() => {
-    if (isInactive) {
-      console.log("User inactive, redirecting to start screen");
-      goTo("STILL_THERE");
-      resetTimer();
-    }
-    return () => {
-      console.log("MenuScreen unmounted");
-    };
-  }, [isInactive, goTo, resetTimer]);
-
+  
   return (
     <div className="absolute w-full h-full flex flex-col">
-      <div className="flex-1">
-        <img src="" alt="" className="w-full h-full object-cover" />
+      <div className="flex flex-1">
+        <div className="sidebar flex w-[240px] border-r"></div>
+        <div className="flex-1">
+
+          <h1 className="text-3xl font-bold p-4">Products</h1>
+
+        </div>
       </div>
-      <div
-        onClick={() => {
-          setTestClickable(testClickableState + 1);
-        }}
-      >
-        {testClickableState}
-      </div>
-      <div className="h-full max-h-[400px] flex justify-center">
-        <button onClick={() => addProduct({ name: "Cheeseburger", id: "cheeseburger", price: 5.99 , quantity: 1})}>Add Cheeseburger</button>
-        <div className="h-full bg-teal-600 w-full">{order.map((item) => (<div key={item.name}>{item.name} x{item.quantity}</div>))}</div>
+      <div className="flex h-[280px] w-full items-center justify-around border-t">
+        <button
+          className="bg-red-700 h-16 w-64 rounded-md text-white text-xl"
+          onClick={() => {
+            clearOrder();
+            goTo("START");
+          }}
+        >
+          Cancel Order
+        </button>
       </div>
     </div>
   );
