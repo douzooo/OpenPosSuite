@@ -88,3 +88,12 @@
   --color-persian-red-900: #772925;
   --color-persian-red-950: #40110f;
 }
+
+
+.nodrag {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+}

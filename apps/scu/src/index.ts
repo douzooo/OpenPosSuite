@@ -1,10 +1,12 @@
-
-import dgram from 'dgram';
+import dgram from "dgram";
 import express from "express";
 import http from "http";
 import { Server, Socket } from "socket.io";
-import { ClientToServerEvents, ServerToClientEvents } from '../../../packages/socket-contracts/src/socket';
-import network from './utils/network';
+import {
+  ClientToServerEvents,
+  ServerToClientEvents,
+} from "../../../packages/socket-contracts/src/socket";
+import network from "./utils/network";
 
 const app = express();
 app.use(express.json());
@@ -19,51 +21,50 @@ const io = new Server(httpServer, {
   },
 });
 
-io.on("connection", (socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {
-  console.log("New Socket.IO connection:", socket.id);
+io.on(
+  "connection",
+  (socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {
+    console.log("New Socket.IO connection:", socket.id);
 
-  socket.on("kiosk:register", (payload) => {
-    console.log("Kiosk registered:", payload.kioskId);
-    socket.join("kiosk:" + payload.kioskId);
-    socket.emit("kiosk:register:ack", { accepted: true });
-  });
-
-
-
-  socket.on("kiosk:assets:manifest", () => {
-    console.log("Kiosk assets request received");
-
-    socket.emit("kiosk:assets:manifest:response", {
-      assets: [
-        { id: "Asset 1", url: "http://example.com/asset1", hash: "hash1" },
-        { id: "Asset 2", url: "http://example.com/asset2", hash: "hash2" },
-      ],
+    socket.on("kiosk:register", (payload) => {
+      console.log("Kiosk registered:", payload.kioskId);
+      socket.join("kiosk:" + payload.kioskId);
+      socket.emit("kiosk:register:ack", { accepted: true });
     });
-  });
 
-  socket.on("kiosk:products:request", () => {
-    console.log("Kiosk products request received");
+    socket.on("kiosk:assets:manifest", () => {
+      console.log("Kiosk assets request received");
 
-    socket.emit("kiosk:products:response", {
-      products: [
-        { id: "prod1", name: "Product 1", price: 9.99 },
-        { id: "prod2", name: "Product 2", price: 19.99 },
-      ],
+      socket.emit("kiosk:assets:manifest:response", {
+        assets: [
+          { id: "Asset 1", url: "http://example.com/asset1", hash: "hash1" },
+          { id: "Asset 2", url: "http://example.com/asset2", hash: "hash2" },
+        ],
+      });
     });
-  });
-  
 
-  socket.on("disconnect", () => {
-    console.log("Client disconnected:", socket.id);
-  });
-});
+    socket.on("kiosk:products:request", () => {
+      console.log("Kiosk products request received");
+
+      socket.emit("kiosk:products:response", {
+        products: [
+          { id: "prod1", name: "Product 1", price: 9.99 },
+          { id: "prod2", name: "Product 2", price: 19.99 },
+          { id: "prod2", name: "Product 3", price: 19.99 },
+          { id: "prod2", name: "Product 4", price: 19.99 },
+        ],
+      });
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Client disconnected:", socket.id);
+    });
+  }
+);
 
 httpServer.listen(SOCKET_PORT, () => {
   console.log(`SCU API + Socket.IO running on port ${SOCKET_PORT}`);
 });
-
-
-
 
 /**
  * SMU Discovery Broadcast
@@ -92,9 +93,7 @@ setInterval(() => {
   );
 
   for (const t of targets) {
-    console.log(
-      `Broadcast → ${t.interface} | ${t.address} → ${t.broadcast}`
-    );
+    console.log(`Broadcast → ${t.interface} | ${t.address} → ${t.broadcast}`);
 
     discoverySocket.send(
       payload,
