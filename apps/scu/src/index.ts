@@ -48,10 +48,12 @@ io.on(
 
       socket.emit("kiosk:products:response", {
         products: [
-          { id: "prod1", name: "Product 1", price: 9.99 },
-          { id: "prod2", name: "Product 2", price: 19.99 },
-          { id: "prod2", name: "Product 3", price: 19.99 },
-          { id: "prod2", name: "Product 4", price: 19.99 },
+          {
+            id: "prod1", name: "Cheeseburger", price: 9.99,
+            label: { key: "label.popular" }
+          },
+          { id: "prod2", name: "Chickenburger", price: 1900.99 ,label: null},
+    
         ],
       });
     });

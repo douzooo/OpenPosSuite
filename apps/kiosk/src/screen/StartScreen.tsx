@@ -43,7 +43,7 @@ const StartScreen = () => {
         <span>{time.toLowerCase()}</span>
         <span>DE</span>
       </div>
-      <div className="flex flex-col items-center gap-26">
+      <div className="flex flex-col items-center gap-26 justify-center h-[70%]">
         <h1 className="text-5xl font-bold">"Wo willst du heute essen?"</h1>
         <div className="flex gap-2 relative">
           <button

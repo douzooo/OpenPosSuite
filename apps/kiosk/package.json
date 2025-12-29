@@ -15,18 +15,18 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@openpos/socket-contracts": "workspace:*",
     "@tailwindcss/cli": "^4.1.18",
     "@tailwindcss/vite": "^4.1.18",
     "bufferutil": "^4.0.9",
     "dgram": "^1.0.1",
     "react": "^18.2.0",
+    "react-custom-scrollbars-2": "^4.5.0",
     "react-dom": "^18.2.0",
     "socket.io-client": "^4.8.1",
     "tailwindcss": "^4.1.18",
     "utf-8-validate": "^6.0.5",
-    "ws": "^8.18.3",
-    "@openpos/socket-contracts": "workspace:*"
-
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@types/react": "^18.2.64",

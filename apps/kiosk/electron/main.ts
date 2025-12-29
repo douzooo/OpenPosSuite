@@ -9,6 +9,9 @@ import {
   ServerToClientEvents,
 } from "@openpos/socket-contracts";
 
+// Doesnt work  idk why
+app.commandLine.appendSwitch('remote-debugging-port', '9222');
+
 app.setName("OpenPos Kiosk");
 app.setAppUserModelId("org.openpos.kiosk"); //TODO: Change this in future i guess
 

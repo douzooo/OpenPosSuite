@@ -4512,7 +4512,7 @@ const kAborted = Symbol("kAborted");
 const protocolVersions = [8, 13];
 const readyStates = ["CONNECTING", "OPEN", "CLOSING", "CLOSED"];
 const subprotocolRegex = /^[!#$%&'*+\-.0-9A-Z^_`|a-z~]+$/;
-class WebSocket extends EventEmitter {
+let WebSocket$1 = class WebSocket extends EventEmitter {
   /**
    * Create a new `WebSocket`.
    *
@@ -4880,36 +4880,36 @@ class WebSocket extends EventEmitter {
       this._socket.destroy();
     }
   }
-}
-Object.defineProperty(WebSocket, "CONNECTING", {
+};
+Object.defineProperty(WebSocket$1, "CONNECTING", {
   enumerable: true,
   value: readyStates.indexOf("CONNECTING")
 });
-Object.defineProperty(WebSocket.prototype, "CONNECTING", {
+Object.defineProperty(WebSocket$1.prototype, "CONNECTING", {
   enumerable: true,
   value: readyStates.indexOf("CONNECTING")
 });
-Object.defineProperty(WebSocket, "OPEN", {
+Object.defineProperty(WebSocket$1, "OPEN", {
   enumerable: true,
   value: readyStates.indexOf("OPEN")
 });
-Object.defineProperty(WebSocket.prototype, "OPEN", {
+Object.defineProperty(WebSocket$1.prototype, "OPEN", {
   enumerable: true,
   value: readyStates.indexOf("OPEN")
 });
-Object.defineProperty(WebSocket, "CLOSING", {
+Object.defineProperty(WebSocket$1, "CLOSING", {
   enumerable: true,
   value: readyStates.indexOf("CLOSING")
 });
-Object.defineProperty(WebSocket.prototype, "CLOSING", {
+Object.defineProperty(WebSocket$1.prototype, "CLOSING", {
   enumerable: true,
   value: readyStates.indexOf("CLOSING")
 });
-Object.defineProperty(WebSocket, "CLOSED", {
+Object.defineProperty(WebSocket$1, "CLOSED", {
   enumerable: true,
   value: readyStates.indexOf("CLOSED")
 });
-Object.defineProperty(WebSocket.prototype, "CLOSED", {
+Object.defineProperty(WebSocket$1.prototype, "CLOSED", {
   enumerable: true,
   value: readyStates.indexOf("CLOSED")
 });
@@ -4922,10 +4922,10 @@ Object.defineProperty(WebSocket.prototype, "CLOSED", {
   "readyState",
   "url"
 ].forEach((property) => {
-  Object.defineProperty(WebSocket.prototype, property, { enumerable: true });
+  Object.defineProperty(WebSocket$1.prototype, property, { enumerable: true });
 });
 ["open", "error", "close", "message"].forEach((method) => {
-  Object.defineProperty(WebSocket.prototype, `on${method}`, {
+  Object.defineProperty(WebSocket$1.prototype, `on${method}`, {
     enumerable: true,
     get() {
       for (const listener of this.listeners(method)) {
@@ -4947,9 +4947,9 @@ Object.defineProperty(WebSocket.prototype, "CLOSED", {
     }
   });
 });
-WebSocket.prototype.addEventListener = addEventListener$1;
-WebSocket.prototype.removeEventListener = removeEventListener$1;
-var websocket = WebSocket;
+WebSocket$1.prototype.addEventListener = addEventListener$1;
+WebSocket$1.prototype.removeEventListener = removeEventListener$1;
+var websocket = WebSocket$1;
 function initAsClient(websocket2, address, protocols, options) {
   const opts = {
     allowSynchronousEvents: true,
@@ -5135,7 +5135,7 @@ function initAsClient(websocket2, address, protocols, options) {
   });
   req.on("upgrade", (res, socket, head) => {
     websocket2.emit("upgrade", res);
-    if (websocket2.readyState !== WebSocket.CONNECTING) return;
+    if (websocket2.readyState !== WebSocket$1.CONNECTING) return;
     req = websocket2._req = null;
     const upgrade = res.headers.upgrade;
     if (upgrade === void 0 || upgrade.toLowerCase() !== "websocket") {
@@ -5207,7 +5207,7 @@ function initAsClient(websocket2, address, protocols, options) {
   }
 }
 function emitErrorAndClose(websocket2, err) {
-  websocket2._readyState = WebSocket.CLOSING;
+  websocket2._readyState = WebSocket$1.CLOSING;
   websocket2.emit("error", err);
   websocket2.emitClose();
 }
@@ -5223,7 +5223,7 @@ function tlsConnect(options) {
   return tls.connect(options);
 }
 function abortHandshake(websocket2, stream, message) {
-  websocket2._readyState = WebSocket.CLOSING;
+  websocket2._readyState = WebSocket$1.CLOSING;
   const err = new Error(message);
   Error.captureStackTrace(err, abortHandshake);
   if (stream.setHeader) {
@@ -5298,7 +5298,7 @@ function socketOnClose() {
   this.removeListener("close", socketOnClose);
   this.removeListener("data", socketOnData);
   this.removeListener("end", socketOnEnd);
-  websocket2._readyState = WebSocket.CLOSING;
+  websocket2._readyState = WebSocket$1.CLOSING;
   let chunk;
   if (!this._readableState.endEmitted && !websocket2._closeFrameReceived && !websocket2._receiver._writableState.errorEmitted && (chunk = websocket2._socket.read()) !== null) {
     websocket2._receiver.write(chunk);
@@ -5320,7 +5320,7 @@ function socketOnData(chunk) {
 }
 function socketOnEnd() {
   const websocket2 = this[kWebSocket$1];
-  websocket2._readyState = WebSocket.CLOSING;
+  websocket2._readyState = WebSocket$1.CLOSING;
   websocket2._receiver.end();
   this.end();
 }
@@ -5329,11 +5329,11 @@ function socketOnError() {
   this.removeListener("error", socketOnError);
   this.on("error", NOOP);
   if (websocket2) {
-    websocket2._readyState = WebSocket.CLOSING;
+    websocket2._readyState = WebSocket$1.CLOSING;
     this.destroy();
   }
 }
-const WebSocket$1 = /* @__PURE__ */ getDefaultExportFromCjs(websocket);
+const WebSocket2 = /* @__PURE__ */ getDefaultExportFromCjs(websocket);
 const { tokenChars } = validationExports;
 const { Duplex } = require$$0$3;
 const { createHash } = require$$1$3;
@@ -5433,7 +5433,7 @@ class WS extends BaseWS {
         opts.headers.cookie.push(`${name}=${cookie.value}`);
       }
     }
-    return new WebSocket$1(uri, protocols, opts);
+    return new WebSocket2(uri, protocols, opts);
   }
   doWrite(packet, data) {
     const opts = {};
@@ -7863,6 +7863,7 @@ function discoverViaUDP() {
     });
   });
 }
+app.commandLine.appendSwitch("remote-debugging-port", "9222");
 app.setName("OpenPos Kiosk");
 app.setAppUserModelId("org.openpos.kiosk");
 const products = [];
