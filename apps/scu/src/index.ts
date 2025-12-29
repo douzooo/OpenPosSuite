@@ -49,10 +49,24 @@ io.on(
       socket.emit("kiosk:products:response", {
         products: [
           {
-            id: "prod1", name: "Cheeseburger", price: 9.99,
+            id: "prod1", name: "Cheeseburger", price: 5.99,
             label: { key: "label.popular" }
           },
+          { id: "prod2", name: "Chickenburger", price: 4.99 ,label: null},
+          { id: "prod2", name: "BigFatty", price: 1900.99 ,label: null},
+          { id: "prod2", name: "SmallFatty", price: 1900.99 ,label: null},
           { id: "prod2", name: "Chickenburger", price: 1900.99 ,label: null},
+          { id: "prod2", name: "Chickenburger", price: 1900.99 ,label: null},
+          { id: "prod2", name: "Chickenburger", price: 1900.99 ,label: null},
+          { id: "prod2", name: "Chickenburger", price: 1900.99 ,label: null},
+          { id: "prod2", name: "Chickenburger", price: 1900.99 ,label: null},
+          { id: "prod2", name: "Chickenburger", price: 1900.99 ,label: null},
+          { id: "prod2", name: "Chickenburger", price: 1900.99 ,label: null},
+          { id: "prod2", name: "Chickenburger", price: 1900.99 ,label: null},
+          { id: "prod2", name: "Chickenburger", price: 1900.99 ,label: null},
+          { id: "prod2", name: "Chickenburger", price: 1900.99 ,label: null},
+          { id: "prod2", name: "Chickenburger", price: 1900.99 ,label: {"key": "label.new"}},
+          { id: "prod2", name: "Free Burger at the bottom lol", price: 0 ,label: null},
     
         ],
       });

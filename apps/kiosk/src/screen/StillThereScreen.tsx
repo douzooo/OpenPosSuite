@@ -17,7 +17,7 @@ const StillThereScreen = () => {
       setSecondsLeft((s) => {
         if (s <= 1) {
           clearInterval(interval);
-          goTo("START");
+          goTo({ name: "START" });
           clearOrder();
           resetTimer();
           return 0;
@@ -34,7 +34,7 @@ const StillThereScreen = () => {
         <h1>Are you still there?</h1>
         <button
           onClick={() => {
-            goTo("START");
+            goTo({ name: "START" });
             clearOrder();
             resetTimer();
           }}

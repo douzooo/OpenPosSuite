@@ -9,7 +9,7 @@ type ScreenContextType = {
 const ScreenContext = createContext<ScreenContextType | undefined>(undefined);
 
 export function ScreenProvider({ children }: { children: ReactNode }) {
-  const [screen, setScreen] = useState<Screen>('BOOT');
+  const [screen, setScreen] = useState<Screen>({ name: 'BOOT' });
 
   return (
     <ScreenContext.Provider value={{ screen, goTo: setScreen }}>

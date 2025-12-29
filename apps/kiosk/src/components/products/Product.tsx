@@ -1,12 +1,20 @@
 import testCheeseburgerImage from "../../assets/cheeseburger.png";
 import { Product as ProductType } from "@openpos/socket-contracts";
 import style from "./Product.module.css";
-
+import { useScreen } from "../../state/useScreen";
 const Product = (product: ProductType) => {
+
+  const { goTo } = useScreen();
+
   return (
     <div
       className={`w-full border rounded-xl aspect-3/4 p-5 border-gray-300 relative flex flex-col justify-between active:bg-black/15 select-none cursor-pointer nodrag ${product.label && style.label}`}
       product-label-new={product.label?.key || ""}
+      onClick={
+        ()=> {
+          goTo({ name: "SELECT_PRODUCT", product:  product  });
+        }
+      }
     >
       <img
         src={testCheeseburgerImage}

@@ -7,9 +7,21 @@ import Product from "../components/products/Product";
 import Scrollbars from "react-custom-scrollbars-2";
 
 const MenuScreen = () => {
-  const { clearOrder } = useOrder();
+  const { clearOrder, order } = useOrder();
   const { goTo } = useScreen();
-  const products = useProducts();
+  let products = useProducts();
+
+  products = products.sort((a, b) => (b.label?.key || "").localeCompare(a.label?.key || ""));
+
+  {/** Calculate total items in the order, however could I make this better? */}
+  const [productInCarts, setProductInCarts] = useState<number>(0);
+  useEffect(() => {
+    let totalItems = 0;
+    order.forEach((item) => {
+      totalItems += item.quantity;
+    });
+    setProductInCarts(totalItems);
+  }, [order]);
 
   return (
     <div className="absolute w-full h-full flex flex-col">
@@ -60,11 +72,12 @@ const MenuScreen = () => {
         </div>
       </div>
       <div className="flex min-h-[280px] h-[280px] w-full items-center justify-around border-t">
+        <span>{productInCarts} Items</span> {/** Dont like it that way rn */}
         <button
           className="bg-red-700 h-16 w-64 rounded-md text-white text-xl"
           onClick={() => {
             clearOrder();
-            goTo("START");
+            goTo({ name: "START" });
           }}
         >
           Cancel Order

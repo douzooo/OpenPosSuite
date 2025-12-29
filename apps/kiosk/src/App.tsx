@@ -5,13 +5,14 @@ import StartScreen from "./screen/StartScreen";
 import MenuScreen from "./screen/MenuScreen";
 import StillThereScreen from "./screen/StillThereScreen";
 import { useInactivity } from "./hooks/InactivityContext";
+import AddProductScreen from "./screen/AddProductScreen";
 
 export default function App() {
   const { screen, goTo } = useScreen();
   const { isInactive, resetTimer } = useInactivity();
 
   useEffect(() => {
-    if (isInactive && (screen === "BOOT" || screen === "START")) {
+    if (isInactive && (screen.name === "BOOT" || screen.name === "START")) {
       //TODO: Maybe have a list of screens that should not have inactivity
       resetTimer();
       return;
@@ -25,9 +26,9 @@ export default function App() {
     const unsub = (window as any).scu.onStatus((status: string) => {
       console.log("Hellooo", status);
       if (status === "connected") {
-        goTo("START");
+        goTo({ name: "START" });
       } else if (status == "disconnected") {
-        goTo("BOOT");
+        goTo({ name: "BOOT" });
       }
     });
 
@@ -42,7 +43,7 @@ export default function App() {
 
   let screenToShow = null;
 
-  switch (screen) {
+  switch (screen.name) {
     case "BOOT":
       screenToShow = <LoadingScene />;
       break;
@@ -52,14 +53,23 @@ export default function App() {
     case "MENU":
       screenToShow = <MenuScreen />;
       break;
+    case "SELECT_PRODUCT": 
+       screenToShow = <AddProductScreen product={screen.product} />;
+       break;
     default:
-      return null;
+      return (<div className="m-4 p-4 border-4 border-red-400 bg-red-600">
+        <h1 className="text-white text-4xl font-extrabold">Error</h1>
+        <p className="text-white my-4 rounded-md">Unknown screen: {JSON.stringify(screen)}</p>
+        <p className="text-white uppercase font-extrabold">Please contact a staff member</p>
+      </div>);
   }
 
   return (
     <>
       {screenToShow}
-      {(isInactive && !(screen === "BOOT" || screen === "START")) && <StillThereScreen />}
+      {isInactive && !(screen.name === "BOOT" || screen.name === "START") && (
+        <StillThereScreen />
+      )}
     </>
   );
 }

@@ -49,7 +49,7 @@ const StartScreen = () => {
           <button
             className="rounded-2xl bg-white w-[365px] h-[500px] font-extrabold cursor-pointer border border-gray-300 text-3xl justify-center flex items-center flex-col"
             onClick={async () => {
-              goTo("MENU");
+              goTo({ name: "MENU" });
             }}
           >
             <img src={foodToGo} alt="Mitnehmen" className="w-55" />
@@ -58,7 +58,7 @@ const StartScreen = () => {
           <button
             className="rounded-2xl bg-red-700 w-[365px] h-[500px] text-white font-bold cursor-pointer border border-gray-300"
             onClick={async () => {
-              goTo("MENU");
+              goTo({ name: "MENU" });
             }}
           >
             <img src={foodReady} alt="Hier essen" className="w-60" />
