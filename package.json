@@ -7,5 +7,9 @@
     "build": "pnpm -r build",
     "kiosk:dev": "cd apps/kiosk && pnpm dev",
     "scu:dev": "cd apps/scu && pnpm dev"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["electron"]
   }
 }
+
