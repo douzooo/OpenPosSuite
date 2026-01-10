@@ -4,26 +4,24 @@ class KioskManager {
     #kiosks = new Map<string, ServerKiosk>();
     #pending = new Map<string, ServerKiosk>();
 
-
-
     registerUnknown(kioskInfo: Partial<Kiosk>): ServerKiosk {
-        const tempId = crypto.randomUUID();
+        const deviceId = crypto.randomUUID();
 
         const kiosk : ServerKiosk = {
             ...kioskInfo,
             setupState: "PENDING",
             lastSeen: Date.now(),
-            tempId
+            deviceId
         } as ServerKiosk;
 
-        this.#pending.set(tempId, kiosk);
+        this.#pending.set(deviceId, kiosk);
         return kiosk;
     }
 
-    setup(tempId: string, kioskId: string, poiid: string): ServerKiosk {
-        const kiosk = this.#pending.get(tempId);
+    setup(deviceId: string, kioskId: string, poiid: string): ServerKiosk {
+        const kiosk = this.#pending.get(deviceId);
         if (!kiosk) {
-            throw new Error("Kiosk with tempId " + tempId + " not found in pending kiosks");
+            throw new Error("Kiosk with deviceId " + deviceId + " not found in pending kiosks");
         }
 
         kiosk.kioskId = kioskId;
@@ -31,21 +29,25 @@ class KioskManager {
         kiosk.setupState = "REGISTERED";
         kiosk.lastSeen = Date.now();
         
-        this.#pending.delete(tempId);
-        this.#kiosks.set(kioskId, kiosk);
+        this.#pending.delete(deviceId);
+        this.#kiosks.set(deviceId, kiosk);
 
         return kiosk;
     }
 
-    heartbeat(kioskId: string): void {
-        const kiosk = this.#kiosks.get(kioskId);
+    heartbeat(deviceId: string): void {
+        const kiosk = this.#kiosks.get(deviceId);
         if (kiosk) {
             kiosk.lastSeen = Date.now();
         }
     }
 
-    getByKioskId(kioskId: string): ServerKiosk | undefined {
-        return this.#kiosks.get(kioskId);
+    getByDeviceId(deviceId: string): ServerKiosk | undefined {
+        return this.#kiosks.get(deviceId);
+    }
+
+    getPendingByDeviceId(deviceId: string): ServerKiosk | undefined {
+        return this.#pending.get(deviceId);
     }
 
 }

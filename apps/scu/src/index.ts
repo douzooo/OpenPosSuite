@@ -91,14 +91,29 @@ io.on(
   (socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {
     console.log("New Socket.IO connection:", socket.id);
 
-    socket.on("kiosk:whoami", () => {
+    socket.on("kiosk:whoami", (deviceId?: string) => {
       console.log("Kiosk whoami request received");
+      console.log("Provided deviceId:", deviceId);
 
-      if (kioskManager.getByKioskId(socket.id)) {
-        socket.emit("kiosk:whoami:response", kioskManager.getByKioskId(socket.id)!!);
-      }else{
-        const unknownKiosk = kioskManager.registerUnknown({});
-        socket.emit("kiosk:whoami:response", unknownKiosk);
+      if (kioskManager.getByDeviceId(deviceId || "")) {
+        socket.emit("kiosk:whoami:response", kioskManager.getByDeviceId(deviceId || "")!!);
+      } else {
+        if (!deviceId) {
+          console.log("No deviceId provided, generating a new unknown kiosk");
+          const unknownKiosk = kioskManager.registerUnknown({});
+          socket.emit("kiosk:whoami:response", unknownKiosk);
+        } else {
+          if (kioskManager.getPendingByDeviceId(deviceId)) {
+            console.log("Kiosk with deviceId " + deviceId + " found in pending kiosks");
+
+            socket.emit("kiosk:whoami:response", kioskManager.getPendingByDeviceId(deviceId)!!);
+            //TEMPORALY ASIGN A KIOSK ID
+            kioskManager.setup(deviceId, "TEMP_KIOSK_ID_" + deviceId, "TEMP_POIID_" + deviceId);
+            return;
+          }
+          const unknownKiosk = kioskManager.registerUnknown({});
+          socket.emit("kiosk:whoami:response", unknownKiosk);
+        }
       }
     });
 

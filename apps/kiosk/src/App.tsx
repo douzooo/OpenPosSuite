@@ -9,6 +9,7 @@ import AddProductScreen from "./screen/AddProductScreen";
 import { Screen } from "./state/screens";
 import ErrorScreen from "./screen/ErrorScreen";
 import { Kiosk, KioskSetupState, KioskState } from "@openpos/socket-contracts";
+import SetupKioskScreen from "./screen/SetupKioskScreen";
 
 export default function App() {
   const { screen, goTo } = useScreen();
@@ -27,7 +28,7 @@ export default function App() {
   }, [goTo]);
 
   useEffect(() => {
-    if (isInactive && (screen.name === "BOOT" || screen.name === "START" || screen.name === "ERROR")) {
+    if (isInactive && (screen.name === "BOOT" || screen.name === "START" || screen.name === "ERROR" || screen.name === "SETUP_KIOSK")) {
       //TODO: Maybe have a list of screens that should not have inactivity
       resetTimer();
       return;
@@ -68,17 +69,17 @@ export default function App() {
     case "ERROR":
       screenToShow = <ErrorScreen message={screen.message} />;
       break;
+    case "SETUP_KIOSK":
+      screenToShow = <SetupKioskScreen deviceId={screen.deviceId} />;
+      break;
     default:
       return <ErrorScreen message={`Unknown screen: ${screen.name}`} />;
   }
 
-
-
-
   return (
     <>
       {screenToShow}
-      {isInactive && !(screen.name === "BOOT" || screen.name === "START" || screen.name === "ERROR") && (
+      {isInactive && !(screen.name === "BOOT" || screen.name === "START" || screen.name === "ERROR" || screen.name === "SETUP_KIOSK") && (
         <StillThereScreen />
       )}
     </>

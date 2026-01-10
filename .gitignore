@@ -8,3 +8,5 @@ out/
 release/
 
 .env
+apps/.DS_Store
+.DS_Store

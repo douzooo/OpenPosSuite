@@ -1,8 +1,6 @@
-export interface Kiosk {
+export interface Kiosk extends KioskConfig{
   setupState: KioskSetupState;
   state: KioskState;
-  tempId?: string;
-  kioskId?: string;
 }
 
 export interface ServerKiosk extends Kiosk {
@@ -10,6 +8,10 @@ export interface ServerKiosk extends Kiosk {
   terminal_id?: string;
 }
 
+export interface KioskConfig{
+  deviceId?: string;
+  kioskId?: string;
+}
 
 export type KioskState = "ONLINE" | "OFFLINE";
 export type KioskSetupState = "UNKNOWN" | "PENDING" | "REGISTERED";

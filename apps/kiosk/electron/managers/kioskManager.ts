@@ -1,12 +1,42 @@
-import { Kiosk } from "@openpos/socket-contracts";
+import { Kiosk, KioskConfig } from "@openpos/socket-contracts";
 import { Screen } from "../../src/state/screens";
 import { BrowserWindow } from "electron";
 import { ipcMain } from "electron";
+import Store from "electron-store";
 
 class KioskManager {
-  //TODO: Store state locally
-  kiosk: Kiosk = { setupState: "UNKNOWN", state: "OFFLINE" };
+  private store: Store<{ kioskConfig: KioskConfig }>;
+  kiosk: Kiosk;
   private mainWindow: BrowserWindow | null = null;
+
+  constructor() {
+    this.store = new Store<{ kioskConfig: KioskConfig }>({
+      defaults: {
+        kioskConfig: {},
+      },
+    });
+    
+    // Load persisted state
+    const config = this.store.get("kioskConfig");
+    this.kiosk = {
+      ...config,
+      setupState: config.deviceId ? 'PENDING' : (config.kioskId ? 'REGISTERED' : 'UNKNOWN'),
+      state: "ONLINE",
+    };
+    console.log("Loaded kiosk config:", this.kiosk);
+  }
+
+  registerTemporary(temporaryId: string, kioskInfo: Partial<Kiosk>) {
+    this.kiosk = {
+      ...this.kiosk,
+      ...kioskInfo,
+      deviceId: temporaryId,
+      setupState: "PENDING",
+    };
+    this.store.set("kioskConfig", this.kiosk);
+  }
+
+
 
   setMainWindow(window: BrowserWindow) {
     this.mainWindow = window;
@@ -26,6 +56,7 @@ class KioskManager {
 
   updateKioskState(kiosk: Kiosk) {
     this.kiosk = kiosk;
+    this.store.set("kioskConfig", kiosk); // Persist to disk
     if (this.mainWindow && !this.mainWindow.isDestroyed()) {
       this.mainWindow.webContents.send('kiosk-state-changed', kiosk.state);
     }

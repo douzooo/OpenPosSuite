@@ -5,6 +5,7 @@ import { resolveSMU } from "./smuResolver";
 import { Socket } from "socket.io-client";
 import {
   ClientToServerEvents,
+  Kiosk,
   KioskState,
   Product,
   ServerToClientEvents,
@@ -192,7 +193,11 @@ class SMUConnectionManager {
       log("SMU connection established");
       this.setupSocketListeners();
       
-      await this.socket.emit("kiosk:whoami");
+      if(kioskManager.kiosk.setupState !== "REGISTERED"){
+        log("Requesting kiosk identity...");
+        await this.socket.emit("kiosk:whoami", kioskManager.kiosk.deviceId);
+      }
+
       log("Requesting kiosk assets...");
 
 
@@ -235,18 +240,19 @@ class SMUConnectionManager {
 
     this.socket.removeAllListeners();
 
-    this.socket.on("kiosk:whoami:response", async (data) => {
+    this.socket.on("kiosk:whoami:response", async (data: Kiosk) => {
       log("Received kiosk identity info: " + JSON.stringify(data));
       kioskManager.kiosk = data;
     
 
-      if(kioskManager.kiosk.setupState !== "REGISTERED"){
+      if (data.kioskId === undefined) {
         this.updateStatus("OFFLINE");
-        log("Kiosk is not registered, cannot proceed.");
+        log("Kiosk is not registered, cannot proceed. " + JSON.stringify(data));
         //TODO: Show setup required window
-        kioskManager.show({name: 'ERROR', message: 'Kiosk is not registered. Please set up the kiosk before proceeding.'});
+      
+        kioskManager.registerTemporary(data.deviceId!!, data);
+        kioskManager.show({name: 'SETUP_KIOSK', deviceId: data.deviceId!!});
         setKioskMode(true)
-        return;
       }
 
       if (this.socket) {
@@ -265,6 +271,7 @@ class SMUConnectionManager {
       log("Received products info: " + JSON.stringify(data));
 
       this.updateStatus("ONLINE");
+      kioskManager.show({name: 'START'});
       setKioskMode(true);
     });
 
@@ -282,6 +289,7 @@ class SMUConnectionManager {
   private handleDisconnection() {
     this.cleanup();
     this.updateStatus("OFFLINE");
+    kioskManager.show({name: 'BOOT'});
     setKioskMode(false);
 
     if (this.isRunning) {
