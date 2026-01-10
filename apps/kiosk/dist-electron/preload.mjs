@@ -24,3 +24,22 @@ electron.contextBridge.exposeInMainWorld("products", {
     return () => electron.ipcRenderer.removeListener("products", listener);
   }
 });
+electron.contextBridge.exposeInMainWorld("screenManager", {
+  onShowScreen: (callback) => {
+    const listener = (_, data) => {
+      callback(data);
+    };
+    electron.ipcRenderer.on("show-screen", listener);
+    return () => electron.ipcRenderer.removeListener("show-screen", listener);
+  }
+});
+electron.contextBridge.exposeInMainWorld("kiosk", {
+  onStateChange: (callback) => {
+    const listener = (_, kiosk) => {
+      callback(kiosk);
+    };
+    electron.ipcRenderer.on("kiosk-state-changed", listener);
+    return () => electron.ipcRenderer.removeListener("kiosk-state-changed", listener);
+  },
+  getState: () => electron.ipcRenderer.invoke("kiosk-get-state")
+});

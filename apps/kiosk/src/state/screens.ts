@@ -10,4 +10,4 @@ export type Screen =
   | {name: 'PROCESSING'}
   | {name: 'SUCCESS'}
   | {name: 'STILL_THERE'}
-  | {name: 'ERROR'};
+  | {name: 'ERROR', message?: string};

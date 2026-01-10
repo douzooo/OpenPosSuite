@@ -13,11 +13,12 @@ import { MessageClassType } from "@adyen/api-library/lib/src/typings/terminal/me
 import { MessageCategoryType } from "@adyen/api-library/lib/src/typings/terminal/messageCategoryType";
 import { MessageType } from "@adyen/api-library/lib/src/typings/terminal/models";
 
+import { kioskManager } from "./managers/kioskManager";
 
 const config = new Config({
-    apiKey: "YOUR_API_KEY",
-    environment: EnvironmentEnum.TEST,
-    region: RegionEnum.EU
+  apiKey: "YOUR_API_KEY",
+  environment: EnvironmentEnum.TEST,
+  region: RegionEnum.EU
 });
 
 const client = new Client(config);
@@ -30,44 +31,44 @@ const POIID = "default";
 
 const transactionID = "TransactionID";
 const paymentRequest: SaleToPOIRequest = {
-    MessageHeader: {
-        MessageClass: MessageClassType.Service,
-        MessageCategory: MessageCategoryType.Payment,
-        MessageType: MessageType.Request,
-        ProtocolVersion: "3.0",
-        ServiceID: serviceID,
-        SaleID: saleID,
-        POIID: POIID
-    },
-    PaymentRequest: {
-        SaleData: {
-            SaleTransactionID: {
-                TransactionID: transactionID,
-                TimeStamp: new Date().toISOString()
-            },
+  MessageHeader: {
+    MessageClass: MessageClassType.Service,
+    MessageCategory: MessageCategoryType.Payment,
+    MessageType: MessageType.Request,
+    ProtocolVersion: "3.0",
+    ServiceID: serviceID,
+    SaleID: saleID,
+    POIID: POIID
+  },
+  PaymentRequest: {
+    SaleData: {
+      SaleTransactionID: {
+        TransactionID: transactionID,
+        TimeStamp: new Date().toISOString()
+      },
 
-            SaleToAcquirerData: {
-                applicationInfo: {
-                    merchantApplication: {
-                        version: "1",
-                        name: "test",
-                    }
-                }
-            }
-        },
-        PaymentTransaction: {
-            AmountsReq: {
-                Currency: "EUR",
-                RequestedAmount: 1000
-            }
+      SaleToAcquirerData: {
+        applicationInfo: {
+          merchantApplication: {
+            version: "1",
+            name: "test",
+          }
         }
+      }
+    },
+    PaymentTransaction: {
+      AmountsReq: {
+        Currency: "EUR",
+        RequestedAmount: 1000
+      }
     }
+  }
 };
 
 terminalCloudAPI.sync({ SaleToPOIRequest: paymentRequest }).catch((error) => {
-    console.error("Error making payment request:", error);
+  console.error("Error making payment request:", error);
 }).finally(() => {
-    console.log("Payment request process completed.");
+  console.log("Payment request process completed.");
 });
 
 
@@ -89,6 +90,17 @@ io.on(
   "connection",
   (socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {
     console.log("New Socket.IO connection:", socket.id);
+
+    socket.on("kiosk:whoami", () => {
+      console.log("Kiosk whoami request received");
+
+      if (kioskManager.getByKioskId(socket.id)) {
+        socket.emit("kiosk:whoami:response", kioskManager.getByKioskId(socket.id)!!);
+      }else{
+        const unknownKiosk = kioskManager.registerUnknown({});
+        socket.emit("kiosk:whoami:response", unknownKiosk);
+      }
+    });
 
     socket.on("kiosk:register", (payload) => {
       console.log("Kiosk registered:", payload.kioskId);
@@ -116,22 +128,22 @@ io.on(
             id: "prod1", name: "Cheeseburger", price: 5.99,
             label: { key: "label.popular" }
           },
-          { id: "prod2", name: "Chickenburger", price: 4.99 ,label: null},
-          { id: "prod2", name: "BigFatty", price: 1900.99 ,label: null},
-          { id: "prod2", name: "SmallFatty", price: 1900.99 ,label: null},
-          { id: "prod2", name: "Chickenburger", price: 1900.99 ,label: null},
-          { id: "prod2", name: "Chickenburger", price: 1900.99 ,label: null},
-          { id: "prod2", name: "Chickenburger", price: 1900.99 ,label: null},
-          { id: "prod2", name: "Chickenburger", price: 1900.99 ,label: null},
-          { id: "prod2", name: "Chickenburger", price: 1900.99 ,label: null},
-          { id: "prod2", name: "Chickenburger", price: 1900.99 ,label: null},
-          { id: "prod2", name: "Chickenburger", price: 1900.99 ,label: null},
-          { id: "prod2", name: "Chickenburger", price: 1900.99 ,label: null},
-          { id: "prod2", name: "Chickenburger", price: 1900.99 ,label: null},
-          { id: "prod2", name: "Chickenburger", price: 1900.99 ,label: null},
-          { id: "prod2", name: "Chickenburger", price: 1900.99 ,label: {"key": "label.new"}},
-          { id: "prod2", name: "Free Burger at the bottom lol", price: 0 ,label: null},
-    
+          { id: "prod2", name: "Chickenburger", price: 4.99, label: null },
+          { id: "prod2", name: "BigFatty", price: 1900.99, label: null },
+          { id: "prod2", name: "SmallFatty", price: 1900.99, label: null },
+          { id: "prod2", name: "Chickenburger", price: 1900.99, label: null },
+          { id: "prod2", name: "Chickenburger", price: 1900.99, label: null },
+          { id: "prod2", name: "Chickenburger", price: 1900.99, label: null },
+          { id: "prod2", name: "Chickenburger", price: 1900.99, label: null },
+          { id: "prod2", name: "Chickenburger", price: 1900.99, label: null },
+          { id: "prod2", name: "Chickenburger", price: 1900.99, label: null },
+          { id: "prod2", name: "Chickenburger", price: 1900.99, label: null },
+          { id: "prod2", name: "Chickenburger", price: 1900.99, label: null },
+          { id: "prod2", name: "Chickenburger", price: 1900.99, label: null },
+          { id: "prod2", name: "Chickenburger", price: 1900.99, label: null },
+          { id: "prod2", name: "Chickenburger", price: 1900.99, label: { "key": "label.new" } },
+          { id: "prod2", name: "Free Burger at the bottom lol", price: 0, label: null },
+
         ],
       });
     });

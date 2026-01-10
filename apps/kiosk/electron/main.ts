@@ -5,9 +5,12 @@ import { resolveSMU } from "./smuResolver";
 import { Socket } from "socket.io-client";
 import {
   ClientToServerEvents,
+  KioskState,
   Product,
   ServerToClientEvents,
 } from "@openpos/socket-contracts";
+
+import { kioskManager } from "./managers/kioskManager";
 
 // Doesnt work  idk why
 app.commandLine.appendSwitch('remote-debugging-port', '9222');
@@ -62,6 +65,8 @@ function createWindow() {
       preload: path.join(__dirname, "preload.mjs"),
     },
   });
+
+  kioskManager.setMainWindow(win);
 
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL);
@@ -142,7 +147,6 @@ function log(message: string) {
 class SMUConnectionManager {
   private socket: Socket<ServerToClientEvents, ClientToServerEvents> | null =
     null;
-  private status: "connected" | "disconnected" = "disconnected";
   private reconnecting = false;
   private reconnectAttempts = 0;
   private maxReconnectDelay = 10000;
@@ -164,8 +168,8 @@ class SMUConnectionManager {
     this.cleanup();
   }
 
-  getStatus(): "connected" | "disconnected" {
-    return this.status;
+  getStatus(): KioskState {
+    return kioskManager.kiosk.state;
   }
 
   private async connect() {
@@ -187,11 +191,11 @@ class SMUConnectionManager {
 
       log("SMU connection established");
       this.setupSocketListeners();
-
+      
+      await this.socket.emit("kiosk:whoami");
       log("Requesting kiosk assets...");
-      await this.socket.emit("kiosk:assets:request");
-      log("Requesting products...");
-      await this.socket.emit("kiosk:products:request");
+
+
 
       // Send hello message
       try {
@@ -218,7 +222,7 @@ class SMUConnectionManager {
       log(
         `Connection failed (attempt ${this.reconnectAttempts}). Retrying in ${delay}ms... Error: ${err}`
       );
-      this.updateStatus("disconnected");
+      this.updateStatus("OFFLINE");
 
       if (this.isRunning) {
         setTimeout(() => this.connect(), delay);
@@ -231,6 +235,27 @@ class SMUConnectionManager {
 
     this.socket.removeAllListeners();
 
+    this.socket.on("kiosk:whoami:response", async (data) => {
+      log("Received kiosk identity info: " + JSON.stringify(data));
+      kioskManager.kiosk = data;
+    
+
+      if(kioskManager.kiosk.setupState !== "REGISTERED"){
+        this.updateStatus("OFFLINE");
+        log("Kiosk is not registered, cannot proceed.");
+        //TODO: Show setup required window
+        kioskManager.show({name: 'ERROR', message: 'Kiosk is not registered. Please set up the kiosk before proceeding.'});
+        setKioskMode(true)
+        return;
+      }
+
+      if (this.socket) {
+        await this.socket.emit("kiosk:assets:request");
+        log("Requesting products...");
+        await this.socket.emit("kiosk:products:request");
+      }
+    });
+
     this.socket.on("kiosk:assets:response", (data) => {
       log("Received kiosk assets info: " + JSON.stringify(data));
     });
@@ -239,7 +264,7 @@ class SMUConnectionManager {
       products.splice(0, products.length, ...data.products);
       log("Received products info: " + JSON.stringify(data));
 
-      this.updateStatus("connected");
+      this.updateStatus("ONLINE");
       setKioskMode(true);
     });
 
@@ -256,7 +281,7 @@ class SMUConnectionManager {
 
   private handleDisconnection() {
     this.cleanup();
-    this.updateStatus("disconnected");
+    this.updateStatus("OFFLINE");
     setKioskMode(false);
 
     if (this.isRunning) {
@@ -276,12 +301,12 @@ class SMUConnectionManager {
     }
   }
 
-  private updateStatus(status: "connected" | "disconnected") {
-    this.status = status;
+  private updateStatus(status: KioskState) {
+    kioskManager.kiosk.state = status;
     log(`Status updated: ${status}`);
 
     try {
-      win?.webContents.send("scu-status", { status });
+      win?.webContents.send("scu-status", status);
     } catch (e) {
       // Ignore send errors
     }

@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value2) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value: value2 }) : obj[key] = value2;
 var __publicField = (obj, key, value2) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value2);
-import { app, BrowserWindow, ipcMain, screen } from "electron";
+import { ipcMain, app, BrowserWindow, screen } from "electron";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import require$$0 from "fs";
@@ -8020,6 +8020,39 @@ function discoverViaUDP() {
     });
   });
 }
+class KioskManager {
+  constructor() {
+    //TODO: Store state locally
+    __publicField(this, "kiosk", { setupState: "UNKNOWN", state: "OFFLINE" });
+    __publicField(this, "mainWindow", null);
+  }
+  setMainWindow(window2) {
+    this.mainWindow = window2;
+  }
+  show(screen2) {
+    if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+      this.mainWindow.webContents.send("show-screen", screen2);
+    }
+  }
+  setFullscreen(enable) {
+    if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+      this.mainWindow.setFullScreen(enable);
+    }
+  }
+  updateKioskState(kiosk) {
+    this.kiosk = kiosk;
+    if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+      this.mainWindow.webContents.send("kiosk-state-changed", kiosk.state);
+    }
+  }
+  getKioskState() {
+    return this.kiosk;
+  }
+}
+const kioskManager = new KioskManager();
+ipcMain.handle("kiosk-get-state", () => {
+  return kioskManager.getKioskState();
+});
 app.commandLine.appendSwitch("remote-debugging-port", "9222");
 app.setName("OpenPos Kiosk");
 app.setAppUserModelId("org.openpos.kiosk");
@@ -8059,6 +8092,7 @@ function createWindow() {
       preload: path.join(__dirname$1, "preload.mjs")
     }
   });
+  kioskManager.setMainWindow(win);
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL);
   } else {
@@ -8115,7 +8149,6 @@ function log(message) {
 class SMUConnectionManager {
   constructor() {
     __publicField(this, "socket", null);
-    __publicField(this, "status", "disconnected");
     __publicField(this, "reconnecting", false);
     __publicField(this, "reconnectAttempts", 0);
     __publicField(this, "maxReconnectDelay", 1e4);
@@ -8136,7 +8169,7 @@ class SMUConnectionManager {
     this.cleanup();
   }
   getStatus() {
-    return this.status;
+    return kioskManager.kiosk.state;
   }
   async connect() {
     if (!this.isRunning) return;
@@ -8152,10 +8185,8 @@ class SMUConnectionManager {
       this.reconnectAttempts = 0;
       log("SMU connection established");
       this.setupSocketListeners();
+      await this.socket.emit("kiosk:whoami");
       log("Requesting kiosk assets...");
-      await this.socket.emit("kiosk:assets:request");
-      log("Requesting products...");
-      await this.socket.emit("kiosk:products:request");
       try {
         this.socket.send(
           JSON.stringify({
@@ -8177,7 +8208,7 @@ class SMUConnectionManager {
       log(
         `Connection failed (attempt ${this.reconnectAttempts}). Retrying in ${delay}ms... Error: ${err}`
       );
-      this.updateStatus("disconnected");
+      this.updateStatus("OFFLINE");
       if (this.isRunning) {
         setTimeout(() => this.connect(), delay);
       }
@@ -8186,13 +8217,29 @@ class SMUConnectionManager {
   setupSocketListeners() {
     if (!this.socket) return;
     this.socket.removeAllListeners();
+    this.socket.on("kiosk:whoami:response", async (data) => {
+      log("Received kiosk identity info: " + JSON.stringify(data));
+      kioskManager.kiosk = data;
+      if (kioskManager.kiosk.setupState !== "REGISTERED") {
+        this.updateStatus("OFFLINE");
+        log("Kiosk is not registered, cannot proceed.");
+        kioskManager.show({ name: "ERROR", message: "Kiosk is not registered. Please set up the kiosk before proceeding." });
+        setKioskMode(true);
+        return;
+      }
+      if (this.socket) {
+        await this.socket.emit("kiosk:assets:request");
+        log("Requesting products...");
+        await this.socket.emit("kiosk:products:request");
+      }
+    });
     this.socket.on("kiosk:assets:response", (data) => {
       log("Received kiosk assets info: " + JSON.stringify(data));
     });
     this.socket.on("kiosk:products:response", (data) => {
       products.splice(0, products.length, ...data.products);
       log("Received products info: " + JSON.stringify(data));
-      this.updateStatus("connected");
+      this.updateStatus("ONLINE");
       setKioskMode(true);
     });
     this.socket.on("disconnect", (reason) => {
@@ -8206,7 +8253,7 @@ class SMUConnectionManager {
   }
   handleDisconnection() {
     this.cleanup();
-    this.updateStatus("disconnected");
+    this.updateStatus("OFFLINE");
     setKioskMode(false);
     if (this.isRunning) {
       setTimeout(() => this.connect(), 1e3);
@@ -8224,10 +8271,10 @@ class SMUConnectionManager {
     }
   }
   updateStatus(status) {
-    this.status = status;
+    kioskManager.kiosk.state = status;
     log(`Status updated: ${status}`);
     try {
-      win == null ? void 0 : win.webContents.send("scu-status", { status });
+      win == null ? void 0 : win.webContents.send("scu-status", status);
     } catch (e) {
     }
   }

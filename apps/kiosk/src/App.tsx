@@ -6,13 +6,28 @@ import MenuScreen from "./screen/MenuScreen";
 import StillThereScreen from "./screen/StillThereScreen";
 import { useInactivity } from "./hooks/InactivityContext";
 import AddProductScreen from "./screen/AddProductScreen";
+import { Screen } from "./state/screens";
+import ErrorScreen from "./screen/ErrorScreen";
+import { Kiosk, KioskSetupState, KioskState } from "@openpos/socket-contracts";
 
 export default function App() {
   const { screen, goTo } = useScreen();
   const { isInactive, resetTimer } = useInactivity();
 
+  console.log("Current screen:", screen);
+
   useEffect(() => {
-    if (isInactive && (screen.name === "BOOT" || screen.name === "START")) {
+    const unsub = (window as any).kiosk.onStateChange((kiosk: KioskState) => {
+      goTo({name: "ERROR", message: "Kiosk state changed: " + kiosk});
+    });
+
+    return () => {
+      if (typeof unsub === "function") unsub();
+    };
+  }, [goTo]);
+
+  useEffect(() => {
+    if (isInactive && (screen.name === "BOOT" || screen.name === "START" || screen.name === "ERROR")) {
       //TODO: Maybe have a list of screens that should not have inactivity
       resetTimer();
       return;
@@ -22,19 +37,12 @@ export default function App() {
     };
   }, [isInactive, goTo, resetTimer, screen]);
 
-  useEffect(() => {
-    const unsub = (window as any).scu.onStatus((status: string) => {
-      console.log("Hellooo", status);
-      if (status === "connected") {
-        goTo({ name: "START" });
-      } else if (status == "disconnected") {
-        goTo({ name: "BOOT" });
-      }
-    });
 
-    try {
-      (window as any).scu.requestStatus?.();
-    } catch {}
+
+  useEffect(() => {
+    const unsub = (window as any).screenManager.onShowScreen((screen: Screen) => {
+      goTo(screen);
+    });
 
     return () => {
       if (typeof unsub === "function") unsub();
@@ -42,6 +50,7 @@ export default function App() {
   }, [goTo]);
 
   let screenToShow = null;
+
 
   switch (screen.name) {
     case "BOOT":
@@ -56,18 +65,20 @@ export default function App() {
     case "SELECT_PRODUCT": 
        screenToShow = <AddProductScreen product={screen.product} />;
        break;
+    case "ERROR":
+      screenToShow = <ErrorScreen message={screen.message} />;
+      break;
     default:
-      return (<div className="m-4 p-4 border-4 border-red-400 bg-red-600">
-        <h1 className="text-white text-4xl font-extrabold">Error</h1>
-        <p className="text-white my-4 rounded-md">Unknown screen: {JSON.stringify(screen)}</p>
-        <p className="text-white uppercase font-extrabold">Please contact a staff member</p>
-      </div>);
+      return <ErrorScreen message={`Unknown screen: ${screen.name}`} />;
   }
+
+
+
 
   return (
     <>
       {screenToShow}
-      {isInactive && !(screen.name === "BOOT" || screen.name === "START") && (
+      {isInactive && !(screen.name === "BOOT" || screen.name === "START" || screen.name === "ERROR") && (
         <StillThereScreen />
       )}
     </>

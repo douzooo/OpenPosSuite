@@ -1,8 +1,9 @@
 import { ipcRenderer, contextBridge } from 'electron';
+import { Kiosk, KioskState } from '../../../packages/socket-contracts/src/types';
 
 // --------- Expose some API to the Renderer process ---------
 contextBridge.exposeInMainWorld('scu', {
-  onStatus: (cb: (status: string) => void) => {
+  onStatus: (cb: (status: KioskState) => void) => {
     const listener = (_: any, data: any) => cb(data?.status);
     ipcRenderer.on('scu-status', listener);
     return () => ipcRenderer.removeListener('scu-status', listener);
@@ -28,3 +29,26 @@ contextBridge.exposeInMainWorld('products', {
     return () => ipcRenderer.removeListener('products', listener);
   }
 });
+
+
+contextBridge.exposeInMainWorld('screenManager', {
+  onShowScreen: (callback: (data: any) => void) => {
+    const listener = (_: any, data: any) => {
+      callback(data);
+    }
+    ipcRenderer.on('show-screen', listener);
+    return () => ipcRenderer.removeListener('show-screen', listener);
+  }
+});
+
+contextBridge.exposeInMainWorld('kiosk', {
+  onStateChange: (callback: (kiosk: any) => void) => {
+    const listener = (_: any, kiosk: any) => {
+      callback(kiosk);
+    }
+    ipcRenderer.on('kiosk-state-changed', listener);
+    return () => ipcRenderer.removeListener('kiosk-state-changed', listener);
+  },
+  getState: () => ipcRenderer.invoke('kiosk-get-state')
+});
+
