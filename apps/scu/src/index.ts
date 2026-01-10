@@ -7,6 +7,70 @@ import {
   ServerToClientEvents,
 } from "../../../packages/socket-contracts/src/socket";
 import network from "./utils/network";
+import { Client, Config, EnvironmentEnum, RegionEnum, TerminalCloudAPI } from "@adyen/api-library";
+import { SaleToPOIRequest } from "@adyen/api-library/lib/src/typings/terminal/saleToPOIRequest";
+import { MessageClassType } from "@adyen/api-library/lib/src/typings/terminal/messageClassType";
+import { MessageCategoryType } from "@adyen/api-library/lib/src/typings/terminal/messageCategoryType";
+import { MessageType } from "@adyen/api-library/lib/src/typings/terminal/models";
+
+
+const config = new Config({
+    apiKey: "YOUR_API_KEY",
+    environment: EnvironmentEnum.TEST,
+    region: RegionEnum.EU
+});
+
+const client = new Client(config);
+client.config.terminalApiCloudEndpoint = "https://localhost:8443";
+const terminalCloudAPI = new TerminalCloudAPI(client);
+
+const serviceID = "123456789";
+const saleID = "POS-SystemID12345";
+const POIID = "default";
+
+const transactionID = "TransactionID";
+const paymentRequest: SaleToPOIRequest = {
+    MessageHeader: {
+        MessageClass: MessageClassType.Service,
+        MessageCategory: MessageCategoryType.Payment,
+        MessageType: MessageType.Request,
+        ProtocolVersion: "3.0",
+        ServiceID: serviceID,
+        SaleID: saleID,
+        POIID: POIID
+    },
+    PaymentRequest: {
+        SaleData: {
+            SaleTransactionID: {
+                TransactionID: transactionID,
+                TimeStamp: new Date().toISOString()
+            },
+
+            SaleToAcquirerData: {
+                applicationInfo: {
+                    merchantApplication: {
+                        version: "1",
+                        name: "test",
+                    }
+                }
+            }
+        },
+        PaymentTransaction: {
+            AmountsReq: {
+                Currency: "EUR",
+                RequestedAmount: 1000
+            }
+        }
+    }
+};
+
+terminalCloudAPI.sync({ SaleToPOIRequest: paymentRequest }).catch((error) => {
+    console.error("Error making payment request:", error);
+}).finally(() => {
+    console.log("Payment request process completed.");
+});
+
+
 
 const app = express();
 app.use(express.json());

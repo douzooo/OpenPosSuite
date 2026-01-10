@@ -95,6 +95,9 @@ importers:
 
   apps/scu:
     dependencies:
+      '@adyen/api-library':
+        specifier: ^30.0.1
+        version: 30.0.1
       dgram:
         specifier: ^1.0.1
         version: 1.0.1
@@ -140,6 +143,10 @@ packages:
 
   7zip-bin@5.2.0:
     resolution: {integrity: sha512-ukTPVhqG4jNzMro2qA9HSCSSVJN3aN7tlb+hfqYCt3ER0yWroeA2VR38MNrOHLQ/cVj+DaIMad0kFCtWWowh/A==}
+
+  '@adyen/api-library@30.0.1':
+    resolution: {integrity: sha512-V9j5PG30N8+Besk1KZ5syHmpBIQrcTdjtN4Nz2Fsy2NK79LcTFNk6U9GHxcz6qnjYOW3/7WmhEXmXDNKgozY5Q==}
+    engines: {node: '>=18'}
 
   '@babel/code-frame@7.27.1':
     resolution: {integrity: sha512-cjQ7ZlQ0Mv3b47hABuTevyTuYN4i+loJKGeV9flcCgIK37cCXRh+L1bd3iBHlynerhQ7BhCkn2BPbQUL+rGqFg==}
@@ -851,6 +858,9 @@ packages:
 
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
+
+  '@types/node@18.19.69':
+    resolution: {integrity: sha512-ECPdY1nlaiO/Y6GUnwgtAAhLNaQ53AyIVz+eILxpEo5OvuqE6yWkqWBIb5dU0DqhKQtMeny+FBD3PK6lm7L5xQ==}
 
   '@types/node@22.19.5':
     resolution: {integrity: sha512-HfF8+mYcHPcPypui3w3mvzuIErlNOh2OAG+BCeBZCEwyiD5ls2SiCwEyT47OELtf7M3nHxBdu0FsmzdKxkN52Q==}
@@ -2643,6 +2653,9 @@ packages:
   undefsafe@2.0.5:
     resolution: {integrity: sha512-WxONCrssBM8TSPRqN5EmsjVrsv4A8X12J4ArBiiayv3DyyG3ZlIg6yysuuSYdZsVz3TKcTg2fd//Ujd4CHV1iA==}
 
+  undici-types@5.26.5:
+    resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
+
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
@@ -2821,6 +2834,14 @@ packages:
 snapshots:
 
   7zip-bin@5.2.0: {}
+
+  '@adyen/api-library@30.0.1':
+    dependencies:
+      https-proxy-agent: 5.0.1
+    optionalDependencies:
+      '@types/node': 18.19.69
+    transitivePeerDependencies:
+      - supports-color
 
   '@babel/code-frame@7.27.1':
     dependencies:
@@ -3465,6 +3486,11 @@ snapshots:
       '@types/node': 25.0.5
 
   '@types/ms@2.1.0': {}
+
+  '@types/node@18.19.69':
+    dependencies:
+      undici-types: 5.26.5
+    optional: true
 
   '@types/node@22.19.5':
     dependencies:
@@ -5523,6 +5549,9 @@ snapshots:
   typescript@5.9.3: {}
 
   undefsafe@2.0.5: {}
+
+  undici-types@5.26.5:
+    optional: true
 
   undici-types@6.21.0: {}
 
