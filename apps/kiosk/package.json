@@ -21,6 +21,8 @@
     "bufferutil": "^4.0.9",
     "dgram": "^1.0.1",
     "electron-store": "^11.0.2",
+    "overlayscrollbars": "^2.13.0",
+    "overlayscrollbars-react": "^0.5.6",
     "react": "^18.2.0",
     "react-custom-scrollbars-2": "^4.5.0",
     "react-dom": "^18.2.0",
