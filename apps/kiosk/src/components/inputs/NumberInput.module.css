@@ -1,0 +1,23 @@
+.input::-webkit-outer-spin-button,
+.input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.input {
+    border-top: solid 1px #ccc;
+    border-bottom: solid 1px #ccc;
+    padding-left: 20px;
+}
+
+.button{
+    padding: 4px;
+    aspect-ratio: 1;
+
+    border: solid  1px #ccc;
+}
+
+.button:active {
+    background-color: #eee;
+    box-shadow: inset 0 1px 5px 2px rgba(179, 179, 179, 0.2);
+}

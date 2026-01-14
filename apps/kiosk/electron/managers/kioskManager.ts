@@ -3,6 +3,8 @@ import { Screen } from "../../src/state/screens";
 import { BrowserWindow } from "electron";
 import { ipcMain } from "electron";
 import Store from "electron-store";
+import { OrderItem } from "../../src/hooks/useOrder";
+import { scuManager } from "./scuManager";
 
 class KioskManager {
   private store: Store<{ kioskConfig: KioskConfig }>;
@@ -64,6 +66,11 @@ class KioskManager {
 
   getKioskState() {
     return this.kiosk;
+  }
+
+  //TODO: Make new type for Order which can contain extra info
+  sendOrderRequest(items: OrderItem[]){
+    
   }
 }
 

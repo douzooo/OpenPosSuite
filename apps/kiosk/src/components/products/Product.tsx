@@ -8,7 +8,7 @@ const Product = (product: ProductType) => {
 
   return (
     <div
-      className={`w-full border rounded-xl aspect-3/4 p-5 border-gray-300 relative flex flex-col justify-between active:bg-black/15 select-none cursor-pointer nodrag ${product.label && style.label}`}
+      className={`w-full border rounded-xl aspect-3/4 p-5 max-w-60 border-gray-300 relative flex flex-col justify-between active:bg-black/15 select-none cursor-pointer nodrag ${product.label && style.label}`}
       product-label-new={product.label?.key || ""}
       onClick={
         ()=> {

@@ -10,6 +10,7 @@ import { Screen } from "./state/screens";
 import ErrorScreen from "./screen/ErrorScreen";
 import { Kiosk, KioskSetupState, KioskState } from "@openpos/socket-contracts";
 import SetupKioskScreen from "./screen/SetupKioskScreen";
+import OrderReviewScreen from "./screen/OrderReviewScreen";
 
 export default function App() {
   const { screen, goTo } = useScreen();
@@ -19,7 +20,7 @@ export default function App() {
 
   useEffect(() => {
     const unsub = (window as any).kiosk.onStateChange((kiosk: KioskState) => {
-      goTo({name: "ERROR", message: "Kiosk state changed: " + kiosk});
+      goTo({ name: "ERROR", message: "Kiosk state changed: " + kiosk });
     });
 
     return () => {
@@ -63,14 +64,17 @@ export default function App() {
     case "MENU":
       screenToShow = <MenuScreen />;
       break;
-    case "SELECT_PRODUCT": 
-       screenToShow = <AddProductScreen product={screen.product} />;
-       break;
+    case "SELECT_PRODUCT":
+      screenToShow = <AddProductScreen product={screen.product} />;
+      break;
     case "ERROR":
       screenToShow = <ErrorScreen message={screen.message} />;
       break;
     case "SETUP_KIOSK":
       screenToShow = <SetupKioskScreen deviceId={screen.deviceId} />;
+      break;
+    case "ORDER_REVIEW":
+      screenToShow = <OrderReviewScreen />;
       break;
     default:
       return <ErrorScreen message={`Unknown screen: ${screen.name}`} />;

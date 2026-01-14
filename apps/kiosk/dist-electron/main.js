@@ -18503,6 +18503,9 @@ class KioskManager {
   getKioskState() {
     return this.kiosk;
   }
+  //TODO: Make new type for Order which can contain extra info
+  sendOrderRequest(items2) {
+  }
 }
 const kioskManager = new KioskManager();
 ipcMain$1.handle("kiosk-get-state", () => {
@@ -18595,7 +18598,7 @@ function setKioskMode(enabled) {
   }
 }
 function log(message) {
-  console.log(`[SMU] ${message}`);
+  console.log(`[SCU] ${message}`);
   try {
     win == null ? void 0 : win.webContents.send("log-message", { message });
   } catch (e) {
@@ -18638,23 +18641,8 @@ class SMUConnectionManager {
       const socket = await resolveSMU();
       this.socket = socket;
       this.reconnectAttempts = 0;
-      log("SMU connection established");
+      log("SCU connection established");
       this.setupSocketListeners();
-      if (kioskManager.kiosk.setupState !== "REGISTERED") {
-        log("Requesting kiosk identity...");
-        await this.socket.emit("kiosk:whoami", kioskManager.kiosk.deviceId);
-      }
-      log("Requesting kiosk assets...");
-      try {
-        this.socket.send(
-          JSON.stringify({
-            type: "HELLO",
-            role: "KIOSK"
-          })
-        );
-      } catch (e) {
-        log("Failed to send HELLO message: " + e);
-      }
       this.reconnecting = false;
     } catch (err) {
       this.reconnecting = false;
@@ -18672,27 +18660,32 @@ class SMUConnectionManager {
       }
     }
   }
-  setupSocketListeners() {
+  async setupSocketListeners() {
     if (!this.socket) return;
     this.socket.removeAllListeners();
+    log("Requesting kiosk identity...");
+    await this.socket.emit("kiosk:whoami", kioskManager.kiosk.deviceId);
+    log("Requesting kiosk assets...");
     this.socket.on("kiosk:whoami:response", async (data) => {
       log("Received kiosk identity info: " + JSON.stringify(data));
       kioskManager.kiosk = data;
+      if (!this.socket) return;
       if (data.kioskId === void 0) {
         this.updateStatus("OFFLINE");
         log("Kiosk is not registered, cannot proceed. " + JSON.stringify(data));
         kioskManager.registerTemporary(data.deviceId, data);
         kioskManager.show({ name: "SETUP_KIOSK", deviceId: data.deviceId });
         setKioskMode(true);
-      }
-      if (this.socket) {
-        await this.socket.emit("kiosk:assets:request");
-        log("Requesting products...");
-        await this.socket.emit("kiosk:products:request");
+      } else {
+        log("Kiosk is registered with ID: " + data.kioskId);
+        log("Requesting assets...");
+        await this.socket.emit("kiosk:assets:manifest");
       }
     });
-    this.socket.on("kiosk:assets:response", (data) => {
+    this.socket.on("kiosk:assets:manifest:response", async (data) => {
       log("Received kiosk assets info: " + JSON.stringify(data));
+      log("Requesting products...");
+      await this.socket.emit("kiosk:products:request");
     });
     this.socket.on("kiosk:products:response", (data) => {
       products.splice(0, products.length, ...data.products);
@@ -18702,11 +18695,11 @@ class SMUConnectionManager {
       setKioskMode(true);
     });
     this.socket.on("disconnect", (reason) => {
-      log(`SMU socket disconnected: ${reason}`);
+      log(`SCU socket disconnected: ${reason}`);
       this.handleDisconnection();
     });
     this.socket.on("connect_error", (err) => {
-      log(`SMU connection error: ${err}`);
+      log(`SCU connection error: ${err}`);
       this.handleDisconnection();
     });
   }
@@ -18760,7 +18753,7 @@ ipcMain$1.on("scu-request-status", () => {
   } catch (e) {
   }
 });
-ipcMain$1.handle("products-get-all", () => {
+ipcMain$1.handle("products-get-all", async () => {
   console.log("Products requested, sending", products);
   return products;
 });

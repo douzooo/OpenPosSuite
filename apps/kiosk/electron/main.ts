@@ -19,7 +19,7 @@ app.commandLine.appendSwitch('remote-debugging-port', '9222');
 app.setName("OpenPos Kiosk");
 app.setAppUserModelId("org.openpos.kiosk"); //TODO: Change this in future i guess
 
-const products : Product[] = [];
+const products: Product[] = [];
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -136,7 +136,7 @@ function setKioskMode(enabled: boolean) {
 }
 
 function log(message: string) {
-  console.log(`[SMU] ${message}`);
+  console.log(`[SCU] ${message}`);
   try {
     win?.webContents.send("log-message", { message });
   } catch (e) {
@@ -146,8 +146,7 @@ function log(message: string) {
 
 // ===== SMU Connection Manager =====
 class SMUConnectionManager {
-  private socket: Socket<ServerToClientEvents, ClientToServerEvents> | null =
-    null;
+  private socket: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;
   private reconnecting = false;
   private reconnectAttempts = 0;
   private maxReconnectDelay = 10000;
@@ -190,29 +189,11 @@ class SMUConnectionManager {
       this.socket = socket;
       this.reconnectAttempts = 0;
 
-      log("SMU connection established");
+      log("SCU connection established");
       this.setupSocketListeners();
-      
-      if(kioskManager.kiosk.setupState !== "REGISTERED"){
-        log("Requesting kiosk identity...");
-        await this.socket.emit("kiosk:whoami", kioskManager.kiosk.deviceId);
-      }
-
-      log("Requesting kiosk assets...");
 
 
 
-      // Send hello message
-      try {
-        this.socket.send(
-          JSON.stringify({
-            type: "HELLO",
-            role: "KIOSK",
-          })
-        );
-      } catch (e) {
-        log("Failed to send HELLO message: " + e);
-      }
 
       this.reconnecting = false;
     } catch (err) {
@@ -235,35 +216,43 @@ class SMUConnectionManager {
     }
   }
 
-  private setupSocketListeners() {
+  private async setupSocketListeners() {
     if (!this.socket) return;
 
     this.socket.removeAllListeners();
 
+    log("Requesting kiosk identity...");
+    await this.socket.emit("kiosk:whoami", kioskManager.kiosk.deviceId);
+
+
+    log("Requesting kiosk assets...");
+
+
     this.socket.on("kiosk:whoami:response", async (data: Kiosk) => {
       log("Received kiosk identity info: " + JSON.stringify(data));
       kioskManager.kiosk = data;
-    
+      if (!this.socket) return;
 
       if (data.kioskId === undefined) {
         this.updateStatus("OFFLINE");
         log("Kiosk is not registered, cannot proceed. " + JSON.stringify(data));
         //TODO: Show setup required window
-      
+
         kioskManager.registerTemporary(data.deviceId!!, data);
-        kioskManager.show({name: 'SETUP_KIOSK', deviceId: data.deviceId!!});
+        kioskManager.show({ name: 'SETUP_KIOSK', deviceId: data.deviceId!! });
         setKioskMode(true)
+      } else {
+        log("Kiosk is registered with ID: " + data.kioskId);
+        log("Requesting assets...");
+        await this.socket.emit("kiosk:assets:manifest");
       }
 
-      if (this.socket) {
-        await this.socket.emit("kiosk:assets:request");
-        log("Requesting products...");
-        await this.socket.emit("kiosk:products:request");
-      }
     });
 
-    this.socket.on("kiosk:assets:response", (data) => {
+    this.socket.on("kiosk:assets:manifest:response", async (data) => {
       log("Received kiosk assets info: " + JSON.stringify(data));
+      log("Requesting products...");
+      await this.socket!!.emit("kiosk:products:request");
     });
 
     this.socket.on("kiosk:products:response", (data) => {
@@ -271,17 +260,17 @@ class SMUConnectionManager {
       log("Received products info: " + JSON.stringify(data));
 
       this.updateStatus("ONLINE");
-      kioskManager.show({name: 'START'});
+      kioskManager.show({ name: 'START' });
       setKioskMode(true);
     });
 
     this.socket.on("disconnect", (reason) => {
-      log(`SMU socket disconnected: ${reason}`);
+      log(`SCU socket disconnected: ${reason}`);
       this.handleDisconnection();
     });
 
     this.socket.on("connect_error", (err) => {
-      log(`SMU connection error: ${err}`);
+      log(`SCU connection error: ${err}`);
       this.handleDisconnection();
     });
   }
@@ -289,7 +278,7 @@ class SMUConnectionManager {
   private handleDisconnection() {
     this.cleanup();
     this.updateStatus("OFFLINE");
-    kioskManager.show({name: 'BOOT'});
+    kioskManager.show({ name: 'BOOT' });
     setKioskMode(false);
 
     if (this.isRunning) {
@@ -350,8 +339,10 @@ ipcMain.on("scu-request-status", () => {
   }
 });
 
-ipcMain.handle("products-get-all", () => {
+ipcMain.handle("products-get-all", async () => {
+
   console.log("Products requested, sending", products);
+
   return products;
 });
 

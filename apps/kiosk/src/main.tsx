@@ -6,6 +6,8 @@ import "./index.css";
 import { OrderProvider } from "./hooks/useOrder";
 import { InactivityProvider } from "./hooks/InactivityContext";
 
+
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <OrderProvider>

@@ -31,3 +31,15 @@ export interface Product {
 export interface Label {
   key: string;
 }
+
+export interface Order{
+  items: OrderItem[],
+  data: Map<String, Object>
+}
+
+export interface OrderItem {
+	id: string;
+	name: string;
+	price: number;
+	quantity: number;
+}

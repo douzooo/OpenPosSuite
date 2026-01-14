@@ -5,121 +5,133 @@ import { useOrder } from "../hooks/useOrder";
 import { useProducts } from "../hooks/useProducts";
 import Product from "../components/products/Product";
 import Scrollbars from "react-custom-scrollbars-2";
-
+import ScrollArea from "../components/ScrollContainer";
+import { Category } from "../components/category/Category";
 const MenuScreen = () => {
   const { clearOrder, order } = useOrder();
   const { goTo } = useScreen();
+
+  useInactivity();
+
   let products = useProducts();
+  products = products.sort((a, b) =>
+    (b.label?.key || "").localeCompare(a.label?.key || "")
+  );
 
-  products = products.sort((a, b) => (b.label?.key || "").localeCompare(a.label?.key || ""));
+  const [activeFilter, setActiveFilter] = useState("All");
 
-  const [activeFilter, setActiveFilter] = useState<string>("All");
   const filteredProducts = useMemo(() => {
-    if (activeFilter === "All") return products;
     if (activeFilter === "Popular") {
-      return products.filter((p) => p.label?.key === "label.popular");
+      return products.filter(
+        (p) => p.label?.key === "label.popular"
+      );
     }
     if (activeFilter === "New") {
-      return products.filter((p) => p.label?.key === "label.new");
+      return products.filter(
+        (p) => p.label?.key === "label.new"
+      );
     }
     return products;
   }, [products, activeFilter]);
 
-  {/** Calculate total items in the order, however could I make this better? */ }
-  const [productInCarts, setProductInCarts] = useState<number>(0);
-  useEffect(() => {
-    let totalItems = 0;
-    order.forEach((item) => {
-      totalItems += item.quantity;
-    });
-    setProductInCarts(totalItems);
-  }, [order]);
+  const productInCarts = useMemo(
+    () => order?.items.reduce((sum, item) => sum + item.quantity, 0),
+    [order]
+  );
+
+  const priceTotal = useMemo(
+    () =>
+      order?.items.reduce(
+        (sum, item) => sum + item.quantity * (item.price || 0),
+        0
+      ),
+    [order]
+  );
 
   return (
-    <div className="absolute w-full h-full flex flex-col">
-      <div className="flex flex-1 overflow-hidden">
-        <div className="sidebar flex w-[240px]">
+    <div className="absolute inset-0 flex flex-col">
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Sidebar */}
+        <div className="w-60 shrink-0">
           <div className="p-4 text-2xl font-bold">Menu</div>
         </div>
-        <div className="flex flex-col flex-1 p-8 pb-0">
-          <h1 className="text-3xl font-bold p-4">Products</h1>{" "}
-          <div className="flex-1 overflow-hidden relative">
-            <Scrollbars
-              autoHide={false}
-              thumbSize={150}
-              renderTrackVertical={({ style, ...props }) => (
-                <div
-                  {...props}
-                  style={{
-                    ...style,
-                    width: 20,
-                    height: "900px",
-                    right: 20,
-                    top: 0,
-                    borderRadius: 20,
-                    backgroundColor: "#e5e5e5",
-                    zIndex: 100,
-                  }}
-                />
-              )}
-              renderThumbVertical={({ style, ...props }) => (
-                <div
-                  {...props}
-                  style={{
-                    ...style,
-                    width: 40,
-                    right: 10,
-                    borderRadius: 20,
-                    backgroundColor: "#c8c8c8",
-                    cursor: "grab",
-                  }}
-                />
-              )}
-            >
 
-              <div className="sticky top-0 z-10 bg-linear-to-t from-white/80 to-white backdrop-blur p-4 flex gap-2 h-20 drop-shadow-2xl">
-                {[
-                  { key: "All" },
-                  { key: "Popular" },
-                  { key: "New" },
-                ].map((c) => (
-                  <button
-                    key={c.key}
-                    onClick={() => setActiveFilter(c.key)}
-                    className={`px-4 py-2 rounded-full text-sm border ${activeFilter === c.key
-                        ? "bg-gray-800 text-white border-gray-800"
-                        : "bg-gray-200 text-gray-800 border-gray-300"
-                      }`}
-                  >
-                    {c.key}
-                  </button>
+        {/* Content */}
+        <div className="flex flex-col flex-1 p-4 pb-0 overflow-hidden">
+          <h1 className="text-6xl font-extrabold py-20">Burger</h1>
+
+          <div className="flex-1 overflow-hidden relative">
+            <ScrollArea>
+              <div className="sticky top-0 z-1 bg-white p-4 flex gap-2 h-20 shadow-md">
+                {["All", "Popular", "New"].map((key) => (
+                  <Category
+                    id={key}
+                    name={key}
+                    onClick={() => setActiveFilter(key)}
+                    active={activeFilter === key}
+                  />
                 ))}
               </div>
 
-              <div className="grid grid-cols-3 gap-4 pl-2 pr-16 pb-8">
+              <div className="w-auto h-50 border rounded-2xl mx-2 mt-2"></div>
+              {/* Product grid TODO: Add better responsiveness */}
+              <div className="grid grid-cols-3 gap-4 px-2 py-4">
                 {filteredProducts.map((product) => (
                   <Product key={product.id} {...product} />
                 ))}
               </div>
-            </Scrollbars>
+            </ScrollArea>
+
+            <div
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: "10px",
+                pointerEvents: "none",
+                background:
+                  "linear-gradient(to top, rgba(0,0,0,0.1), transparent)",
+                maskImage:
+                  "linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%)",
+                WebkitMaskImage:
+                  "linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%)",
+              }}
+            />
           </div>
+
         </div>
       </div>
-      <div className="relative">
-        <div className="flex min-h-[280px] h-[280px] w-full items-center justify-around shadow-lg relative z-20 bg-white">
-          <span>{productInCarts} Items</span> {/** Dont like it that way rn */}
-          <button
-            className="bg-red-700 h-16 w-64 rounded-md text-white text-xl"
-            onClick={() => {
-              clearOrder();
-              goTo({ name: "START" });
-            }}
-          >
-            Cancel Order
-          </button>
+
+      <div className="relative z-20 bg-white">
+        <div className="flex h-[280px] items-center justify-around">
+          <span className="text-lg font-semibold">
+            {productInCarts} Items ({priceTotal!!.toFixed(2)}$)
+          </span>
+
+          <div className="flex flex-col gap-2">
+            <button
+              className="bg-gray-200 h-16 w-64 rounded-md text-black text-xl"
+              onClick={() => {
+                goTo({ name: "ORDER_REVIEW" });
+              }}
+            >
+              Bestellen
+            </button>
+            <button
+              className="bg-red-700 h-16 w-64 rounded-md text-white text-xl"
+              onClick={() => {
+                clearOrder();
+                goTo({ name: "START" });
+              }}
+            >
+              Cancel Order
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
 };
+
 export default MenuScreen;

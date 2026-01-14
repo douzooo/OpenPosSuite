@@ -1,19 +1,24 @@
+/**
+ * THIS NEEDS HEAVY REWORKING AND CLEANUP
+ * CURRENTLY JUST A QUICK IMPLEMENTATION TO GET THINGS WORKING
+ * 
+ * Has problem with nullable order
+ */
+
+
+import { Order, OrderItem } from '@openpos/socket-contracts';
+import { start } from 'node:repl';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-export interface OrderItem {
-	id: string;
-	name: string;
-	price: number;
-	quantity: number;
-}
 
 interface OrderContextType {
-	order: OrderItem[];
+	order: Order | null;
+	startOrder: () => void;
 	addProduct: (item: OrderItem) => void;
 	removeProduct: (id: string) => void;
 	updateQuantity: (id: string, quantity: number) => void;
 	clearOrder: () => void;
-  placeOrder: () => void;
+	placeOrder: () => void;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
@@ -21,47 +26,77 @@ const OrderContext = createContext<OrderContextType | undefined>(undefined);
 const ORDER_STORAGE_KEY = 'kioskOrder';
 
 export const OrderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-	const [order, setOrder] = useState<OrderItem[]>(() => {
+	const [order, setOrder] = useState<Order | null>(() => {
 		const saved = localStorage.getItem(ORDER_STORAGE_KEY);
-		return saved ? JSON.parse(saved) : [];
+		if (!saved) return null;
+		try {
+			const parsed = JSON.parse(saved);
+			// Validate the structure
+			if (parsed && Array.isArray(parsed.items)) {
+				return {
+					items: parsed.items,
+					data: new Map(Object.entries(parsed.data || {}))
+				};
+			}
+		} catch (e) {
+			console.error('Failed to parse saved order:', e);
+		}
+		return null;
 	});
 
+	const startOrder = () => {
+		setOrder({ items: [], data: new Map() });
+	};
+
 	useEffect(() => {
-		localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify(order));
+		if (order) {
+			// Convert Map to plain object for JSON storage
+			const dataObj = order.data ? Object.fromEntries(order.data) : {};
+			localStorage.setItem(ORDER_STORAGE_KEY, JSON.stringify({ ...order, data: dataObj }));
+		} else {
+			localStorage.removeItem(ORDER_STORAGE_KEY);
+		}
 	}, [order]);
 
 
-  const placeOrder = () => {
-    console.log("Order placed:", order);
-    clearOrder();
-  };
+	const placeOrder = () => {
+		console.log("Order placed:", order);
+		clearOrder();
+	};
 
 	const addProduct = (item: OrderItem) => {
+		console.log("Adding product to order:", item);
+
 		setOrder(prev => {
-			const existing = prev.find(p => p.id === item.id);
-			if (existing) {
-				return prev.map(p =>
-					p.id === item.id ? { ...p, quantity: p.quantity + item.quantity } : p
-				);
+			if (!prev) {
+				return { items: [item], data: new Map<String, Object>() };
 			}
-			return [...prev, item];
+			const existing = prev.items.find(p => p.id === item.id);
+			if (existing) {
+				return { ...prev, items: prev.items.map(p => (p.id === item.id ? { ...p, quantity: p.quantity + item.quantity } : p)) };
+			}
+			return { ...prev, items: [...prev.items, item] };
 		});
 	};
 
 	const removeProduct = (id: string) => {
-		setOrder(prev => prev.filter(p => p.id !== id));
+		setOrder(prev => {
+			if (!prev) return null;
+			return { ...prev, items: prev.items.filter(p => p.id !== id) };
+		});
 	};
 
 	const updateQuantity = (id: string, quantity: number) => {
-		setOrder(prev =>
-			prev.map(p => (p.id === id ? { ...p, quantity } : p))
-		);
+		setOrder(prev => {
+			if (!prev) return null;
+			return { ...prev, items: prev.items.map(p => (p.id === id ? { ...p, quantity } : p)) };
+		});
 	};
 
-	const clearOrder = () => setOrder([]);
+	const clearOrder = () => setOrder(null);
 
 	return (
-		<OrderContext.Provider value={{ order, addProduct, removeProduct, updateQuantity, clearOrder,placeOrder }}>
+		<OrderContext.Provider value={{ order, startOrder, addProduct, removeProduct, updateQuantity, clearOrder, placeOrder }}>
 			{children}
 		</OrderContext.Provider>
 	);

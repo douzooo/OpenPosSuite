@@ -3,9 +3,11 @@ import { useScreen } from "../state/useScreen";
 
 import foodReady from "./../assets/food-ready.png";
 import foodToGo from "./../assets/food-togo.png";
+import { useOrder } from "../hooks/useOrder";
 
 const StartScreen = () => {
   const { goTo } = useScreen();
+  const {startOrder} = useOrder();
 
   const [time, setTime] = useState<string>(() =>
     new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
@@ -47,8 +49,9 @@ const StartScreen = () => {
         <h1 className="text-5xl font-bold">"Wo willst du heute essen?"</h1>
         <div className="flex gap-2 relative">
           <button
-            className="rounded-2xl bg-white w-[365px] h-[500px] font-extrabold cursor-pointer border border-gray-300 text-3xl justify-center flex items-center flex-col"
+            className="rounded-2xl bg-white w-90 h-125 font-extrabold cursor-pointer border border-gray-300 text-3xl justify-center flex items-center flex-col"
             onClick={async () => {
+              startOrder();
               goTo({ name: "MENU" });
             }}
           >
@@ -56,8 +59,9 @@ const StartScreen = () => {
             <p className="absolute bottom-10">Mitnehmen</p>
           </button>
           <button
-            className="rounded-2xl bg-red-700 w-[365px] h-[500px] text-white font-bold cursor-pointer border border-gray-300"
+            className="rounded-2xl bg-red-700 w-90 h-125 text-white font-bold cursor-pointer border border-gray-300"
             onClick={async () => {
+              startOrder();
               goTo({ name: "MENU" });
             }}
           >

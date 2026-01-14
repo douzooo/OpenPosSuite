@@ -98,17 +98,19 @@ io.on(
       if (kioskManager.getByDeviceId(deviceId || "")) {
         socket.emit("kiosk:whoami:response", kioskManager.getByDeviceId(deviceId || "")!!);
       } else {
+      
         if (!deviceId) {
           console.log("No deviceId provided, generating a new unknown kiosk");
           const unknownKiosk = kioskManager.registerUnknown({});
           socket.emit("kiosk:whoami:response", unknownKiosk);
+
         } else {
           if (kioskManager.getPendingByDeviceId(deviceId)) {
             console.log("Kiosk with deviceId " + deviceId + " found in pending kiosks");
 
             socket.emit("kiosk:whoami:response", kioskManager.getPendingByDeviceId(deviceId)!!);
             //TEMPORALY ASIGN A KIOSK ID
-            kioskManager.setup(deviceId, "TEMP_KIOSK_ID_" + deviceId, "TEMP_POIID_" + deviceId);
+            kioskManager.setup(deviceId, "20", "TEMP_POIID_" + deviceId);
             return;
           }
           const unknownKiosk = kioskManager.registerUnknown({});
@@ -144,20 +146,20 @@ io.on(
             label: { key: "label.popular" }
           },
           { id: "prod2", name: "Chickenburger", price: 4.99, label: null },
-          { id: "prod2", name: "BigFatty", price: 1900.99, label: null },
-          { id: "prod2", name: "SmallFatty", price: 1900.99, label: null },
-          { id: "prod2", name: "Chickenburger", price: 1900.99, label: null },
-          { id: "prod2", name: "Chickenburger", price: 1900.99, label: null },
-          { id: "prod2", name: "Chickenburger", price: 1900.99, label: null },
-          { id: "prod2", name: "Chickenburger", price: 1900.99, label: null },
-          { id: "prod2", name: "Chickenburger", price: 1900.99, label: null },
-          { id: "prod2", name: "Chickenburger", price: 1900.99, label: null },
-          { id: "prod2", name: "Chickenburger", price: 1900.99, label: null },
-          { id: "prod2", name: "Chickenburger", price: 1900.99, label: null },
-          { id: "prod2", name: "Chickenburger", price: 1900.99, label: null },
-          { id: "prod2", name: "Chickenburger", price: 1900.99, label: null },
-          { id: "prod2", name: "Chickenburger", price: 1900.99, label: { "key": "label.new" } },
-          { id: "prod2", name: "Free Burger at the bottom lol", price: 0, label: null },
+          { id: "prod3", name: "BigFatty", price: 1900.99, label: null },
+          { id: "prod4", name: "SmallFatty", price: 1900.99, label: null },
+          { id: "prod5", name: "Chickenburger", price: 1900.99, label: null },
+          { id: "prod6", name: "Chickenburger", price: 1900.99, label: null },
+          { id: "prod7", name: "Chickenburger", price: 1900.99, label: null },
+          { id: "prod8", name: "Chickenburger", price: 1900.99, label: null },
+          { id: "prod9", name: "Chickenburger", price: 1900.99, label: null },
+          { id: "prod10", name: "Chickenburger", price: 1900.99, label: null },
+          { id: "prod11", name: "Chickenburger", price: 1900.99, label: null },
+          { id: "prod12", name: "Chickenburger", price: 1900.99, label: null },
+          { id: "prod13", name: "Chickenburger", price: 1900.99, label: null },
+          { id: "prod14", name: "Chickenburger", price: 1900.99, label: null },
+          { id: "prod15", name: "Chickenburger", price: 1900.99, label: { "key": "label.new" } },
+          { id: "prod16", name: "Free Burger at the bottom lol", price: 0, label: null },
 
         ],
       });

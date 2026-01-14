@@ -29,7 +29,7 @@ const StillThereScreen = () => {
   }, [goTo, clearOrder, resetTimer]);
 
   return (
-    <div className="absolute w-full h-full items-center justify-center flex bg-gray-800/40">
+    <div className="absolute w-full h-full items-center justify-center flex bg-gray-800/40 z-100">
       <div className="flex rounded p-6 bg-white">
         <h1>Are you still there?</h1>
         <button
